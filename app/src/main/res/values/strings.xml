@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Bootcamp Magic</string>
+    <string name="cancelar">Cancelar</string>
+    <string name="procurar_por_cartas">Procurar por cartas</string>
 </resources>
