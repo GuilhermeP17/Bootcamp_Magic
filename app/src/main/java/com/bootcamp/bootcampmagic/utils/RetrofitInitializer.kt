@@ -6,10 +6,6 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitInitializer {
 
-
-    fun getCardsDataSource(): CardsDataSource {
-        return getCardsDataSource("https://api.magicthegathering.io/")
-    }
     fun getCardsDataSource(url: String): CardsDataSource {
         return Retrofit.Builder()
             .baseUrl(url)
@@ -17,6 +13,5 @@ object RetrofitInitializer {
             .build()
             .create(CardsDataSource::class.java)
     }
-
 
 }

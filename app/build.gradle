@@ -1,6 +1,7 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
 
 android {
     compileSdkVersion 29
@@ -20,6 +21,10 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            buildConfigField "String", "API_BASE_URL", "\"https://api.magicthegathering.io/\""
+        }
+        debug {
+            buildConfigField "String", "API_BASE_URL", "\"https://api.magicthegathering.io/\""
         }
     }
 
@@ -29,6 +34,15 @@ android {
     }
     kotlinOptions {
         jvmTarget = '1.8'
+    }
+
+    sourceSets {
+        androidTest {
+            java.srcDirs += "src/sharedTest/java"
+        }
+        test {
+            java.srcDirs += "src/sharedTest/java"
+        }
     }
 
 }
@@ -45,11 +59,15 @@ dependencies {
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0'
     implementation 'com.squareup.retrofit2:retrofit:2.3.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.3.0'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0'
+    implementation 'androidx.room:room-runtime:2.2.5'
+    kapt 'androidx.room:room-compiler:2.2.5'
 
     testImplementation 'junit:junit:4.12'
     testImplementation "io.mockk:mockk:1.9"
-    testImplementation "androidx.arch.core:core-testing:2.1.0"
-    testImplementation"com.squareup.okhttp3:mockwebserver:3.14.0"
+    testImplementation 'androidx.arch.core:core-testing:2.1.0'
+    testImplementation 'com.squareup.okhttp3:mockwebserver:3.14.0'
+    testImplementation 'org.jetbrains.kotlinx:kotlinx-coroutines-test:1.2.1'
 
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
