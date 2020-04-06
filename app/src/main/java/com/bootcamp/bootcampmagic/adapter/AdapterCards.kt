@@ -13,8 +13,7 @@ class AdapterCards(private val listCards: List<Card>) : RecyclerView.Adapter<Hol
     }
 
     override fun getItemCount(): Int {
-        //return listCards.size
-        return 50
+        return listCards.size
     }
 
     override fun onBindViewHolder(holder: HolderCards, position: Int) {
