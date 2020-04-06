@@ -8,21 +8,27 @@ import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bootcamp.bootcampmagic.R
 import com.bootcamp.bootcampmagic.adapter.AdapterCards
 import com.bootcamp.bootcampmagic.models.Card
+import com.bootcamp.bootcampmagic.repositories.CardsRepository
+import com.bootcamp.bootcampmagic.utils.App
 import com.bootcamp.bootcampmagic.viewmodels.SetsViewModel
+import com.bootcamp.bootcampmagic.viewmodels.SetsViewModelFactory
+import kotlinx.android.synthetic.main.fragment_set.*
 
-class SetsFragment(private val viewModel: SetsViewModel) : Fragment() {
+class SetsFragment() : Fragment() {
 
-    private lateinit var searchCards: EditText
-    private lateinit var btnCancelar: TextView
-    private lateinit var recyclerCards: RecyclerView
+    private val viewModel: SetsViewModel by viewModels{
+        App().let {
+            SetsViewModelFactory(CardsRepository(it.getCardsDataSource(), it.getCardsDao()))
+        }
+    }
 
-    //private val listCards
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -31,13 +37,7 @@ class SetsFragment(private val viewModel: SetsViewModel) : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_set, container, false)
 
-        searchCards = view.findViewById(R.id.search_cards)
-        btnCancelar = view.findViewById(R.id.btn_cancelar)
-        recyclerCards = view.findViewById(R.id.recycler_cards)
-
         setupObservables()
-
-        viewModel.loadCards()
         return view
     }
 
@@ -45,9 +45,12 @@ class SetsFragment(private val viewModel: SetsViewModel) : Fragment() {
         viewModel.getViewState().observe(viewLifecycleOwner, Observer {
             showErrorMessage(it.toString())
         })
-
         viewModel.getData().observe(viewLifecycleOwner, Observer {
+
+            //TO-DO
+            // change to add items
             setupRecyclerView(it)
+
         })
     }
 
@@ -55,8 +58,8 @@ class SetsFragment(private val viewModel: SetsViewModel) : Fragment() {
         val adapterCards = AdapterCards(listCards)
         val gridLayoutManager = GridLayoutManager(context, 3)
 
-        recyclerCards.layoutManager = gridLayoutManager
-        recyclerCards.adapter = adapterCards
+        recycler_cards.layoutManager = gridLayoutManager
+        recycler_cards.adapter = adapterCards
     }
 
     private fun showErrorMessage(errorMessage: String){

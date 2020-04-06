@@ -15,9 +15,6 @@ import com.google.android.material.tabs.TabLayout
 
 class MainActivity : AppCompatActivity() {
 
-    private val repository: CardsRepository = CardsRepository(App().getCardsDataSource(), App().getCardsDao())
-    private val setsViewModel: SetsViewModel = SetsViewModel(repository)
-
     private lateinit var viewPager: ViewPager
     private lateinit var tabLayout: TabLayout
 
@@ -34,7 +31,7 @@ class MainActivity : AppCompatActivity() {
     private fun setPagerAdapter(): PagerAdapter{
         val pagerAdapter = PagerAdapter(supportFragmentManager, ArrayList(), ArrayList())
 
-        pagerAdapter.adicionarFragment(SetsFragment(setsViewModel), "Sets")
+        pagerAdapter.adicionarFragment(SetsFragment(), "Sets")
         pagerAdapter.adicionarFragment(Fragment(), "Favoritos")
 
         return pagerAdapter

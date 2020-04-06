@@ -3,10 +3,11 @@ package com.bootcamp.bootcampmagic.viewmodels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.bootcamp.bootcampmagic.R
 import com.bootcamp.bootcampmagic.models.Card
 import com.bootcamp.bootcampmagic.repositories.CardsRepository
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.net.HttpURLConnection
 
@@ -31,7 +32,7 @@ class SetsViewModel (
     }
 
     fun loadCards(){
-        viewModelScope.launch {
+        CoroutineScope(Dispatchers.IO).launch {
             repository.getCards(page).let {
                 when(it.errorCode){
 
