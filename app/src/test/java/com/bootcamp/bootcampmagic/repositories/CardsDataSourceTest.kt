@@ -8,8 +8,6 @@ import org.junit.After
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import java.net.HttpURLConnection
 
 class CardsDataSourceTest {
@@ -53,7 +51,7 @@ class CardsDataSourceTest {
             .setBody(FileUtils.readResourceFile("searchCards.json"))
         mockedServer.enqueue(mockedResponse)
 
-        val response = dataSource.searchCards(1, "test").execute()
+        val response = dataSource.getCards(1, "test").execute()
         assertTrue(response.body() != null)
         assertTrue(response.body()!!.cards.isNotEmpty())
 

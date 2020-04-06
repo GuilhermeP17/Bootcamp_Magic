@@ -11,6 +11,6 @@ interface CardsDataSource {
     fun getCards(@Query("page") page: Int): Call<CardsResponse>
 
     @GET("v1/cards")
-    fun searchCards(@Query("page") page: Int, @Query("name") name: String): Call<CardsResponse>
+    fun getCards(@Query("page") page: Int, @Query("name") name: String): Call<CardsResponse>
 
 }

@@ -1,5 +1,8 @@
 package com.bootcamp.bootcampmagic.models
 
+import java.net.HttpURLConnection
+
 data class CardsResponse(
-    val cards: List<Card>
+    var cards: List<Card>,
+    var errorCode: Int = HttpURLConnection.HTTP_OK
 )
