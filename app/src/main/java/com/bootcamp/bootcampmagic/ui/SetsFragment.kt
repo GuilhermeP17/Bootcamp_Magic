@@ -4,22 +4,25 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Adapter
 import android.widget.EditText
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bootcamp.bootcampmagic.R
 import com.bootcamp.bootcampmagic.adapter.AdapterCards
 import com.bootcamp.bootcampmagic.models.Card
+import com.bootcamp.bootcampmagic.viewmodels.SetsViewModel
 
-class SetsFragment : Fragment() {
+class SetsFragment(private val viewModel: SetsViewModel) : Fragment() {
 
-    private lateinit var listCards: RecyclerView
     private lateinit var searchCards: EditText
     private lateinit var btnCancelar: TextView
     private lateinit var recyclerCards: RecyclerView
+
+    //private val listCards
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -28,13 +31,24 @@ class SetsFragment : Fragment() {
     ): View? {
         val view = inflater.inflate(R.layout.fragment_set, container, false)
 
-        listCards = view.findViewById(R.id.recycler_cards)
         searchCards = view.findViewById(R.id.search_cards)
         btnCancelar = view.findViewById(R.id.btn_cancelar)
         recyclerCards = view.findViewById(R.id.recycler_cards)
 
-        setupRecyclerView(listOf(Card("Teste", "Teste 2", "asd", "asdsad", "qwqewqe", false)))
+        setupObservables()
+
+        viewModel.loadCards()
         return view
+    }
+
+    private fun setupObservables(){
+        viewModel.getViewState().observe(viewLifecycleOwner, Observer {
+            showErrorMessage(it.toString())
+        })
+
+        viewModel.getData().observe(viewLifecycleOwner, Observer {
+            setupRecyclerView(it)
+        })
     }
 
     private fun setupRecyclerView(listCards: List<Card>){
@@ -43,5 +57,9 @@ class SetsFragment : Fragment() {
 
         recyclerCards.layoutManager = gridLayoutManager
         recyclerCards.adapter = adapterCards
+    }
+
+    private fun showErrorMessage(errorMessage: String){
+        Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
     }
 }

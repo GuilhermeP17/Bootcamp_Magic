@@ -21,8 +21,6 @@ class SetsViewModel (
         loadCards()
     }
 
-
-
     fun getViewState(): LiveData<SetsViewModelState> = state
     fun getPage(): Int = (page - 1)
     fun getData(): MutableLiveData<MutableList<Card>> = data
