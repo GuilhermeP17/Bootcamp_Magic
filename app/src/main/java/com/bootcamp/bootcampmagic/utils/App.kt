@@ -7,10 +7,12 @@ import com.bootcamp.bootcampmagic.repositories.CardsDao
 import com.bootcamp.bootcampmagic.repositories.CardsDataSource
 import com.bootcamp.bootcampmagic.repositories.CardsDatabase
 
-class App: Application() {
+class App : Application() {
 
-    private lateinit var cardsDatabase: CardsDatabase
-    private lateinit var cardsDataSource: CardsDataSource
+    companion object {
+        private lateinit var cardsDatabase: CardsDatabase
+        private lateinit var cardsDataSource: CardsDataSource
+    }
 
     override fun onCreate() {
         super.onCreate()
@@ -18,7 +20,8 @@ class App: Application() {
         cardsDatabase = Room.databaseBuilder(
             this,
             CardsDatabase::class.java,
-            CardsDatabase.DATABASE_NAME)
+            CardsDatabase.DATABASE_NAME
+        )
             .build()
 
         cardsDataSource = RetrofitInitializer.getCardsDataSource(BuildConfig.API_BASE_URL)
