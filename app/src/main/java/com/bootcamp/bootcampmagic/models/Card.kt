@@ -5,11 +5,11 @@ import androidx.room.PrimaryKey
 
 @Entity
 data class Card (
-    @PrimaryKey val multiverseid: Long,
+    @PrimaryKey val id: String,
     val name: String,
     val type: String,
     val set: String,
     val setName: String,
-    val imageUrl: String,
+    var imageUrl: String = "...",
     var favorite: Boolean = false
 )

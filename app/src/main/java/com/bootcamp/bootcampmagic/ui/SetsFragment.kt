@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bootcamp.bootcampmagic.R
 import com.bootcamp.bootcampmagic.adapter.AdapterCards
+import com.bootcamp.bootcampmagic.adapter.EndlessScrollListener
 import com.bootcamp.bootcampmagic.models.Card
 import com.bootcamp.bootcampmagic.repositories.CardsRepository
 import com.bootcamp.bootcampmagic.utils.App
@@ -35,11 +36,16 @@ class SetsFragment() : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_set, container, false)
+        return inflater.inflate(R.layout.fragment_set, container, false)
+    }
+
+    override fun onActivityCreated(savedInstanceState: Bundle?) {
+        super.onActivityCreated(savedInstanceState)
 
         setupObservables()
-        return view
+        setupRecyclerView(viewModel.getData().value!!)
     }
+
 
     private fun setupObservables(){
         viewModel.getViewState().observe(viewLifecycleOwner, Observer {
@@ -49,7 +55,7 @@ class SetsFragment() : Fragment() {
 
             //TO-DO
             // change to add items
-            setupRecyclerView(it)
+
 
         })
     }
@@ -60,6 +66,12 @@ class SetsFragment() : Fragment() {
 
         recycler_cards.layoutManager = gridLayoutManager
         recycler_cards.adapter = adapterCards
+        val endlessScroll = object: EndlessScrollListener(gridLayoutManager){
+            override fun onLoadMore(page: Int, totalItemsCount: Int) {
+                viewModel.loadCards()
+            }
+        }
+
     }
 
     private fun showErrorMessage(errorMessage: String){

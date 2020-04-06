@@ -31,8 +31,8 @@ class MainActivity : AppCompatActivity() {
     private fun setPagerAdapter(): PagerAdapter{
         val pagerAdapter = PagerAdapter(supportFragmentManager, ArrayList(), ArrayList())
 
-        pagerAdapter.adicionarFragment(SetsFragment(), R.string.titulo_tab_sets.toString())
-        pagerAdapter.adicionarFragment(Fragment(), R.string.titulo_tab_favoritos.toString())
+        pagerAdapter.adicionarFragment(SetsFragment(), getString(R.string.titulo_tab_sets))
+        pagerAdapter.adicionarFragment(Fragment(), getString(R.string.titulo_tab_favoritos))
 
         return pagerAdapter
     }
