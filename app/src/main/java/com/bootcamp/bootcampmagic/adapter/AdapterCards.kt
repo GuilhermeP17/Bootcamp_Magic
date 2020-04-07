@@ -26,9 +26,17 @@ class AdapterCards(val listCards: List<Card>) : RecyclerView.Adapter<AdapterCard
 
     class CardViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         private val imageView = view.img_card
+        private val titleCards = view.title_card
 
         fun bind(card: Card) {
-            Glide.with(itemView).load(card.imageUrl).into(imageView)
+            if (card.imageUrl == "..."){
+                Glide.with(itemView).load(R.drawable.ic_launcher_foreground).into(imageView)
+            }else {
+                Glide.with(itemView).load(card.imageUrl).into(imageView)
+            }
+
+            titleCards.text = card.setName
+            titleCards.visibility = View.VISIBLE
         }
     }
 
