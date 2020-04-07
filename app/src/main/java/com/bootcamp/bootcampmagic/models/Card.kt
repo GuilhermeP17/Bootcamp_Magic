@@ -10,6 +10,6 @@ data class Card (
     val type: String,
     val set: String,
     val setName: String,
-    var imageUrl: String = "...",
+    var imageUrl: String = "",
     var favorite: Boolean = false
 )

@@ -30,6 +30,8 @@ class SetsFragment() : Fragment() {
         }
     }
 
+    private lateinit var adapterCards: AdapterCards
+    private val listCards = mutableListOf<Card>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -42,6 +44,8 @@ class SetsFragment() : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
+        recycler_cards.visibility = View.GONE
+
         setupObservables()
         setupRecyclerView(viewModel.getData().value!!)
     }
@@ -50,28 +54,36 @@ class SetsFragment() : Fragment() {
     private fun setupObservables(){
         viewModel.getViewState().observe(viewLifecycleOwner, Observer {
             showErrorMessage(it.toString())
+            progress_circular.visibility = View.GONE
         })
+
         viewModel.getData().observe(viewLifecycleOwner, Observer {
-
-            //TO-DO
-            // change to add items
-
-
+            updateRecyclerView(it)
         })
     }
 
     private fun setupRecyclerView(listCards: List<Card>){
-        val adapterCards = AdapterCards(listCards)
+        this.listCards.addAll(listCards)
+
+        adapterCards = AdapterCards(listCards)
         val gridLayoutManager = GridLayoutManager(context, 3)
 
         recycler_cards.layoutManager = gridLayoutManager
         recycler_cards.adapter = adapterCards
+
+        recycler_cards.visibility = View.VISIBLE
+        progress_circular.visibility = View.GONE
+
         val endlessScroll = object: EndlessScrollListener(gridLayoutManager){
             override fun onLoadMore(page: Int, totalItemsCount: Int) {
                 viewModel.loadCards()
             }
         }
+    }
 
+    private fun updateRecyclerView(listCards: List<Card>){
+        this.listCards.addAll(listCards)
+        adapterCards.notifyDataSetChanged()
     }
 
     private fun showErrorMessage(errorMessage: String){
