@@ -24,10 +24,16 @@ class SetsViewModel (
         CoroutineScope(Dispatchers.Default).launch {
             repository.getCache().let {
                 withContext(Dispatchers.Main) {
-                    setCards(it)
+                    if(it.isNotEmpty()){
+                        data.value?.addAll(it)
+                        page++
+                        data.notifyObserver()
+                    }
                 }
             }
-            loadCards()
+            withContext(Dispatchers.Main) {
+                state.value = SetsViewModelState.CacheLoaded
+            }
         }
     }
 
@@ -44,27 +50,25 @@ class SetsViewModel (
         CoroutineScope(Dispatchers.Default).launch {
             repository.getCards(page).let {
                 withContext(Dispatchers.Main) {
-                    setCards(it)
-                }
-            }
-        }
-    }
-    private fun setCards(cardsResponse: CardsResponse){
-        cardsResponse.let {
-            when(it.errorCode){
-                HttpURLConnection.HTTP_OK ->
-                    if(it.cards.isNotEmpty()){
-                        if(page == 1){
-                            data.value?.clear()
+
+                    it.let {
+                        when(it.errorCode){
+                            HttpURLConnection.HTTP_OK ->
+                                if(it.cards.isNotEmpty()){
+                                    if(page == 1){
+                                        data.value?.clear()
+                                    }
+                                    data.value?.addAll(it.cards)
+                                    page++
+                                    data.notifyObserver()
+                                }
+
+
+                            else ->
+                                state.value = SetsViewModelState.Error(R.string.generic_network_error)
                         }
-                        data.value?.addAll(it.cards)
-                        page++
-                        data.notifyObserver()
                     }
-
-
-                else ->
-                    state.value = SetsViewModelState.Error(R.string.generic_network_error)
+                }
             }
         }
     }

@@ -1,5 +1,6 @@
 package com.bootcamp.bootcampmagic.repositories
 
+import com.bootcamp.bootcampmagic.models.Card
 import com.bootcamp.bootcampmagic.models.CardsResponse
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -10,10 +11,8 @@ class CardsRepository(
     private val databaseDao: CardsDao
 ){
 
-    suspend fun getCache(): CardsResponse = withContext(Dispatchers.IO) {
-        CardsResponse(ArrayList()).apply {
-            this.cards = databaseDao.getAll()
-        }
+    suspend fun getCache(): List<Card> = withContext(Dispatchers.IO) {
+        databaseDao.getAll()
     }
 
 
