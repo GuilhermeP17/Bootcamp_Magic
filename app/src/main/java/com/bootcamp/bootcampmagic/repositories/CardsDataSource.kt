@@ -7,7 +7,7 @@ import retrofit2.http.Query
 
 interface CardsDataSource {
 
-    @GET("v1/cards?orderBy=set,type,name")
+    @GET("v1/cards?orderBy=types")
     fun getCards(@Query("page") page: Int): Call<CardsResponse>
 
     @GET("v1/cards?orderBy=name")

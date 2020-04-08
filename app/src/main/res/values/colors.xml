@@ -5,5 +5,6 @@
     <color name="colorAccent">#FFFFFF</color>
     <color name="colorBackground">#E41C1C1C</color>
     <color name="searchHintColor">#EEB1B1B1</color>
+    <color name="colorHeader">#EEB1B1B1</color>
     <color name="tabBackground">#F31C1C1C</color>
 </resources>

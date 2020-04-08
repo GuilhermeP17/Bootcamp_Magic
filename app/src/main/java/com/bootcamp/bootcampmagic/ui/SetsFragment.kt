@@ -21,6 +21,7 @@ import com.bootcamp.bootcampmagic.viewmodels.SetsViewModelFactory
 import com.bootcamp.bootcampmagic.viewmodels.SetsViewModelState
 import kotlinx.android.synthetic.main.fragment_set.*
 
+
 class SetsFragment() : Fragment() {
 
     private lateinit var adapterCards: AdapterCards
@@ -54,7 +55,13 @@ class SetsFragment() : Fragment() {
 
         adapterCards = AdapterCards(clickListener)
         val spanCount = 3
-        recycler_cards.layoutManager = GridLayoutManager(context, spanCount)
+        val layoutManager = GridLayoutManager(context, spanCount)
+        layoutManager.spanSizeLookup = object: GridLayoutManager.SpanSizeLookup(){
+            override fun getSpanSize(position: Int): Int {
+                return if (adapterCards.isHeader(position)) layoutManager.spanCount else 1
+            }
+        }
+        recycler_cards.layoutManager = layoutManager
         recycler_cards.addItemDecoration(GridSpacingItemDecoration(
             spanCount,
             resources.getDimensionPixelSize(R.dimen.grid_item_margin),

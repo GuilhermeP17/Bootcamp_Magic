@@ -36,6 +36,9 @@ class CardsRepository(
                                 if(card.imageUrl == null){
                                     card.imageUrl = "..."
                                 }
+                                if(card.types.isNotEmpty()){
+                                    card.type = card.types[0]
+                                }
                             }
 
                             if(page == 1){
