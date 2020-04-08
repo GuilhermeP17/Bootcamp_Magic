@@ -7,31 +7,38 @@ import com.bootcamp.bootcampmagic.R
 import com.bootcamp.bootcampmagic.models.Card
 import com.bootcamp.bootcampmagic.models.CardsResponse
 import com.bootcamp.bootcampmagic.repositories.CardsRepository
+import com.bootcamp.bootcampmagic.utils.DefaultDispatcherProvider
+import com.bootcamp.bootcampmagic.utils.DispatcherProvider
 import kotlinx.coroutines.*
 import java.net.HttpURLConnection
 
 class SetsViewModel (
-    private val repository: CardsRepository
+    private val repository: CardsRepository,
+    private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
 ): ViewModel() {
 
     private val state = MutableLiveData<SetsViewModelState>()
     private var page = 1
+    private val backgroundImage = MutableLiveData<String>()
     private val data = MutableLiveData<MutableList<Card>>().apply {
         value = mutableListOf()
     }
 
     init {
-        CoroutineScope(Dispatchers.Default).launch {
+        CoroutineScope(dispatchers.default()).launch {
             repository.getCache().let {
-                withContext(Dispatchers.Main) {
+                withContext(dispatchers.main()) {
                     if(it.isNotEmpty()){
-                        data.value?.addAll(it)
-                        page++
-                        data.notifyObserver()
+                        data.value?.let {dataList ->
+                            dataList.addAll(it)
+                            page++
+                            data.notifyObserver()
+                            //backgroundImage.value = it[it.indices.random()].imageUrl
+                        }
                     }
                 }
             }
-            withContext(Dispatchers.Main) {
+            withContext(dispatchers.main()) {
                 state.value = SetsViewModelState.CacheLoaded
             }
         }
@@ -40,6 +47,7 @@ class SetsViewModel (
     fun getViewState(): LiveData<SetsViewModelState> = state
     fun getPage(): Int = (page - 1)
     fun getData(): MutableLiveData<MutableList<Card>> = data
+    fun getBackgroundImage(): MutableLiveData<String> = backgroundImage
 
     fun refresh(){
         page = 1
@@ -47,20 +55,23 @@ class SetsViewModel (
     }
 
     fun loadCards(){
-        CoroutineScope(Dispatchers.Default).launch {
+        CoroutineScope(dispatchers.default()).launch {
             repository.getCards(page).let {
-                withContext(Dispatchers.Main) {
+                withContext(dispatchers.main()) {
 
                     it.let {
                         when(it.errorCode){
                             HttpURLConnection.HTTP_OK ->
                                 if(it.cards.isNotEmpty()){
-                                    if(page == 1){
-                                        data.value?.clear()
+                                    data.value?.let {dataList ->
+                                        if(page == 1){
+                                            dataList.clear()
+                                            backgroundImage.value = it.cards[it.cards.indices.random()].imageUrl
+                                        }
+                                        dataList.addAll(it.cards)
+                                        page++
+                                        data.notifyObserver()
                                     }
-                                    data.value?.addAll(it.cards)
-                                    page++
-                                    data.notifyObserver()
                                 }
 
 

@@ -49,7 +49,7 @@ class CardsDatabaseTest {
     private fun createCardsList(): ArrayList<Card>{
         return ArrayList<Card>().apply {
             for (index in 1..10){
-                add(Card(index.toString(), "name $index", "type $index","set $index","setNAme $index","imageUrl $index"))
+                add(Card("id-$index", "name $index", "type $index","set $index","setNAme $index","imageUrl $index"))
             }
         }
     }

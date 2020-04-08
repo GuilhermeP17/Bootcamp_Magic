@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="fragment_horizontal_padding">8dp</dimen>
+    <dimen name="header_margin_bottom">2dp</dimen>
+    <dimen name="header_margin_top">40dp</dimen>
+    <dimen name="default_font_size">18sp</dimen>
+    <dimen name="header_font_size">15sp</dimen>
+    <dimen name="grid_item_margin">10dp</dimen>
 </resources>

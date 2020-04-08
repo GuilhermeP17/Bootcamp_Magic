@@ -1,6 +1,7 @@
 package com.bootcamp.bootcampmagic.repositories
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
+import com.bootcamp.bootcampmagic.utils.CoroutinesTestRule
 import com.bootcamp.bootcampmagic.utils.FileUtils
 import com.bootcamp.bootcampmagic.utils.RetrofitInitializer
 import io.mockk.Runs
@@ -23,6 +24,9 @@ class CardsRepositoryTest {
 
     @get:Rule
     val rule = InstantTaskExecutorRule()
+    @ExperimentalCoroutinesApi
+    @get:Rule
+    var coroutinesTestRule = CoroutinesTestRule()
 
     private var mockedServer = MockWebServer()
     private lateinit var dataSource: CardsDataSource
@@ -30,6 +34,7 @@ class CardsRepositoryTest {
     private lateinit var repository: CardsRepository
 
 
+    @ExperimentalCoroutinesApi
     @Before
     fun setup(){
         mockedServer.start()
@@ -38,8 +43,7 @@ class CardsRepositoryTest {
             databaseDao.updateData(any())
         } just Runs
 
-
-        repository = CardsRepository(dataSource, databaseDao)
+        repository = CardsRepository(dataSource, databaseDao, coroutinesTestRule.testDispatcherProvider)
     }
 
     @After
@@ -50,8 +54,8 @@ class CardsRepositoryTest {
 
     @ExperimentalCoroutinesApi
     @Test
-    fun givenPageNumber_whenGetCardsRequestedOffline_shouldReturnCachedCardsList(){
-        runBlockingTest {
+    fun whenGetCacheRequested_shouldReturnCachedCardsList() {
+        coroutinesTestRule.testDispatcher.runBlockingTest{
 
             //First access, should write to cache
             val mockedResponse = MockResponse()
@@ -66,7 +70,7 @@ class CardsRepositoryTest {
 
 
             //Second access, should be offline, and access cached items
-            val cachedItems = repository.getCache().cards
+            val cachedItems = repository.getCache()
             assertEquals(cachedItems.size, onlineItems.size)
             assertEquals(cachedItems[2].name , onlineItems[2].name)
 
@@ -77,7 +81,7 @@ class CardsRepositoryTest {
     @ExperimentalCoroutinesApi
     @Test
     fun givenPageNumber_whenGetCardsRequested_shouldReturnCardsList(){
-        runBlockingTest {
+        coroutinesTestRule.testDispatcher.runBlockingTest{
             val mockedResponse = MockResponse()
                 .setResponseCode(HttpURLConnection.HTTP_OK)
                 .setBody(FileUtils.readResourceFile("getCards.json"))
@@ -93,7 +97,7 @@ class CardsRepositoryTest {
     @ExperimentalCoroutinesApi
     @Test
     fun givenPageNumberAndFilter_whenSearchCardsRequested_shouldReturnCardsList(){
-        runBlockingTest {
+        coroutinesTestRule.testDispatcher.runBlockingTest{
             val mockedResponse = MockResponse()
                 .setResponseCode(HttpURLConnection.HTTP_OK)
                 .setBody(FileUtils.readResourceFile("searchCards.json"))

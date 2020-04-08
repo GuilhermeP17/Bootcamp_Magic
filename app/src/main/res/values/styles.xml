@@ -8,10 +8,18 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
     <style name="Text.Light" parent="TextAppearance.AppCompat">
         <item name="android:textSize">@dimen/default_font_size</item>
         <item name="android:textStyle">bold</item>
         <item name="android:textColor">@color/colorAccent</item>
+    </style>
+
+    <style name="Text.Header" parent="TextAppearance.AppCompat">
+        <item name="android:textSize">@dimen/header_font_size</item>
+        <item name="android:textColor">@color/colorHeader</item>
     </style>
 
     <style name="SearchBar" parent="@android:style/Widget.EditText">
