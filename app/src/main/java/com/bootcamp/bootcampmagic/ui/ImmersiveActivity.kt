@@ -7,6 +7,8 @@ import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.view.children
+import com.bootcamp.bootcampmagic.utils.GlideWithBlur
+import kotlinx.android.synthetic.main.immersive_background.*
 
 abstract class ImmersiveActivity : AppCompatActivity(){
 
@@ -40,6 +42,13 @@ abstract class ImmersiveActivity : AppCompatActivity(){
 
             backgroundLayoutAttached = true
         }
+    }
+
+    fun setBackgroundImage(imageUrl: String){
+        GlideWithBlur().setImage(this, imageUrl, backgroundImage)
+    }
+    fun setBackgroundImage(imageResource: Int){
+        GlideWithBlur().setImage(this, imageResource, backgroundImage)
     }
 
 }

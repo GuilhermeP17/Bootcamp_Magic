@@ -3,6 +3,7 @@
     <color name="colorPrimary">#FFFFFF</color>
     <color name="colorPrimaryDark">#373737</color>
     <color name="colorAccent">#FFFFFF</color>
-    <color name="colorBackground">#DF232323</color>
+    <color name="colorBackground">#E41C1C1C</color>
     <color name="searchHintColor">#EEB1B1B1</color>
+    <color name="tabBackground">#F31C1C1C</color>
 </resources>

@@ -3,7 +3,6 @@ package com.bootcamp.bootcampmagic.adapter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
 import androidx.annotation.Nullable
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
@@ -21,10 +20,19 @@ class AdapterCards(
 
 
     fun setItems(items: List<Card>){
-        val totalItems = listCards.size
-        listCards.clear()
-        listCards.addAll(items)
-        notifyItemRangeChanged(0, totalItems)
+        if(listCards.isEmpty()){
+
+            listCards.addAll(items)
+            notifyItemRangeChanged(0, items.size)
+
+        }else{
+
+            val totalItems = listCards.size
+            listCards.clear()
+            listCards.addAll(items)
+            notifyItemRangeChanged(0, totalItems)
+
+        }
     }
     fun addItems(items: List<Card>){
         val diffResult = DiffUtil.calculateDiff(MyDiffCallback(items, listCards))
@@ -50,8 +58,7 @@ class AdapterCards(
 
             if (card.imageUrl == "..."){
                 Glide.with(itemView)
-                    .load(R.drawable.ic_launcher_foreground)
-                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .load(R.drawable.no_card)
                     .into(view.img_card)
             }else {
                 Glide.with(itemView.context)
@@ -59,9 +66,6 @@ class AdapterCards(
                     .diskCacheStrategy(DiskCacheStrategy.ALL)
                     .into(view.img_card)
             }
-
-            view.title_card.text = card.setName
-            view.title_card.visibility = View.VISIBLE
 
             clickListener?.let {listener ->
                 view.setOnClickListener {

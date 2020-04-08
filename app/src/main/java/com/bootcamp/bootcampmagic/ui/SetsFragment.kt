@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import com.bootcamp.bootcampmagic.R
 import com.bootcamp.bootcampmagic.adapter.AdapterCards
 import com.bootcamp.bootcampmagic.adapter.EndlessScrollListener
+import com.bootcamp.bootcampmagic.adapter.GridSpacingItemDecoration
 import com.bootcamp.bootcampmagic.models.Card
 import com.bootcamp.bootcampmagic.repositories.CardsRepository
 import com.bootcamp.bootcampmagic.utils.App
@@ -41,6 +42,7 @@ class SetsFragment() : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
+        //(activity as AppCompatActivity).setSupportActionBar(toolbar)
 
         //recycler_cards.visibility = View.GONE
         setupRecyclerView()
@@ -51,7 +53,12 @@ class SetsFragment() : Fragment() {
     private fun setupRecyclerView(){
 
         adapterCards = AdapterCards(clickListener)
-        recycler_cards.layoutManager = GridLayoutManager(context, 3)
+        val spanCount = 3
+        recycler_cards.layoutManager = GridLayoutManager(context, spanCount)
+        recycler_cards.addItemDecoration(GridSpacingItemDecoration(
+            spanCount,
+            resources.getDimensionPixelSize(R.dimen.grid_item_margin),
+            false))
         recycler_cards.adapter = adapterCards
 
         val endlessScrollListener = object : EndlessScrollListener(recycler_cards){
@@ -79,16 +86,21 @@ class SetsFragment() : Fragment() {
                     showErrorMessage(it.toString())
 
                 is SetsViewModelState.CacheLoaded -> {
-                    progress_circular.visibility = View.GONE
                     refresh()
                 }
 
             }
         })
+        viewModel.getBackgroundImage().observe(viewLifecycleOwner, Observer {
+            (activity as MainActivity).setBackgroundImage(it)
+        })
         viewModel.getData().observe(viewLifecycleOwner, Observer {
             if(it.isNotEmpty()){
                 when(isRefreshing){
-                    true -> adapterCards.setItems(it)
+                    true -> {
+                        adapterCards.setItems(it)
+                        //progress_circular.visibility = View.GONE
+                    }
                     else -> adapterCards.addItems(it)
                 }
                 isRefreshing = false
@@ -102,7 +114,7 @@ class SetsFragment() : Fragment() {
     }
 
     private fun showErrorMessage(errorMessage: String){
-        progress_circular.visibility = View.GONE
+        //progress_circular.visibility = View.GONE
         Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
     }
 }
