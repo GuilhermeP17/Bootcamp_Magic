@@ -62,10 +62,7 @@ class SetsFragment() : Fragment() {
             }
         }
         recycler_cards.layoutManager = layoutManager
-        recycler_cards.addItemDecoration(GridSpacingItemDecoration(
-            spanCount,
-            resources.getDimensionPixelSize(R.dimen.grid_item_margin),
-            false))
+        recycler_cards.addItemDecoration(GridSpacingItemDecoration(resources.getDimensionPixelSize(R.dimen.grid_item_margin)))
         recycler_cards.adapter = adapterCards
 
         val endlessScrollListener = object : EndlessScrollListener(recycler_cards){
