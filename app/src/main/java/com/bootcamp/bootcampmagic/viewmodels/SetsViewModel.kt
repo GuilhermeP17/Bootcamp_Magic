@@ -26,17 +26,20 @@ class SetsViewModel (
 
     init {
         CoroutineScope(dispatchers.default()).launch {
-            repository.getCache().let {
-                withContext(dispatchers.main()) {
-                    if(it.isNotEmpty()){
-                        data.value?.let {dataList ->
-                            dataList.addAll(it)
-                            page++
-                            data.notifyObserver()
-                            //backgroundImage.value = it[it.indices.random()].imageUrl
+            try {
+                repository.getCache().let {
+                    withContext(dispatchers.main()) {
+                        if(it.isNotEmpty()){
+                            data.value?.let {dataList ->
+                                dataList.addAll(it)
+                                page++
+                                data.notifyObserver()
+                                //backgroundImage.value = it[it.indices.random()].imageUrl
+                            }
                         }
                     }
                 }
+            } finally {
             }
             withContext(dispatchers.main()) {
                 state.value = SetsViewModelState.CacheLoaded
@@ -56,29 +59,35 @@ class SetsViewModel (
 
     fun loadCards(){
         CoroutineScope(dispatchers.default()).launch {
-            repository.getCards(page).let {
-                withContext(dispatchers.main()) {
+            try {
+                repository.getCards(page).let {
+                    withContext(dispatchers.main()) {
 
-                    it.let {
-                        when(it.errorCode){
-                            HttpURLConnection.HTTP_OK ->
-                                if(it.cards.isNotEmpty()){
-                                    data.value?.let {dataList ->
-                                        if(page == 1){
-                                            dataList.clear()
-                                            backgroundImage.value = it.cards[it.cards.indices.random()].imageUrl
+                        it.let {
+                            when(it.errorCode){
+                                HttpURLConnection.HTTP_OK ->
+                                    if(it.cards.isNotEmpty()){
+                                        data.value?.let {dataList ->
+                                            if(page == 1){
+                                                dataList.clear()
+                                                backgroundImage.value = it.cards[it.cards.indices.random()].imageUrl
+                                            }
+                                            dataList.addAll(it.cards)
+                                            page++
+                                            data.notifyObserver()
                                         }
-                                        dataList.addAll(it.cards)
-                                        page++
-                                        data.notifyObserver()
                                     }
-                                }
 
 
-                            else ->
-                                state.value = SetsViewModelState.Error(R.string.generic_network_error)
+                                else ->
+                                    state.value = SetsViewModelState.Error(R.string.generic_network_error)
+                            }
                         }
                     }
+                }
+            } catch (e: Exception) {
+                withContext(dispatchers.main()) {
+                    state.value = SetsViewModelState.Error(R.string.generic_network_error)
                 }
             }
         }
