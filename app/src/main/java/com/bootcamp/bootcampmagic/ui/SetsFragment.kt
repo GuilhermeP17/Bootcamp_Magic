@@ -1,11 +1,9 @@
 package com.bootcamp.bootcampmagic.ui
 
-import android.opengl.Visibility
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -22,8 +20,8 @@ import com.bootcamp.bootcampmagic.viewmodels.SetsViewModel
 import com.bootcamp.bootcampmagic.viewmodels.SetsViewModelFactory
 import com.bootcamp.bootcampmagic.viewmodels.SetsViewModelState
 import kotlinx.android.synthetic.main.collapsing_toolbar.*
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.fragment_set.*
-
 
 class SetsFragment() : Fragment() {
 
@@ -84,6 +82,11 @@ class SetsFragment() : Fragment() {
             }
         }
 
+        swipeRefresh.setOnRefreshListener {
+            refresh()
+            swipeRefresh.isRefreshing = false
+        }
+
     }
 
     private val clickListener = object: AdapterCards.OnItemClickListener{
@@ -96,7 +99,9 @@ class SetsFragment() : Fragment() {
             when(it){
 
                 is SetsViewModelState.Error ->
-                    showErrorMessage(it.toString())
+                    when(it.message){
+                        R.string.generic_network_error -> showNetworkError(it.message)
+                    }
 
                 is SetsViewModelState.CacheLoaded -> {
                     refresh()
@@ -130,7 +135,14 @@ class SetsFragment() : Fragment() {
         viewModel.refresh()
     }
 
-    private fun showErrorMessage(errorMessage: String){
-        Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
+    private fun showNetworkError(errorMessage: Int){
+        activity?.findViewById<View>(R.id.tab_set_favorites)?.let {
+            Snackbar.make(it, errorMessage, Snackbar.LENGTH_LONG)
+                .setAnchorView(it)
+                .setAction(R.string.try_again) {
+                    viewModel.loadCards()
+                }
+                .show()
+        }
     }
 }
