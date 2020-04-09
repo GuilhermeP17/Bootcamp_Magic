@@ -8,9 +8,10 @@ import com.bootcamp.bootcampmagic.repositories.CardsDataSource
 import com.bootcamp.bootcampmagic.repositories.CardsDatabase
 
 class App: Application() {
-
-    private lateinit var cardsDatabase: CardsDatabase
-    private lateinit var cardsDataSource: CardsDataSource
+    companion object{
+        private lateinit var cardsDatabase: CardsDatabase
+        private lateinit var cardsDataSource: CardsDataSource
+    }
 
     override fun onCreate() {
         super.onCreate()

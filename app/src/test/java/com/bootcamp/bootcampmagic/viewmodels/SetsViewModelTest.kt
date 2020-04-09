@@ -6,9 +6,11 @@ import com.bootcamp.bootcampmagic.models.CardsResponse
 import com.bootcamp.bootcampmagic.repositories.CardsRepository
 import com.bootcamp.bootcampmagic.utils.CoroutinesTestRule
 import com.bootcamp.bootcampmagic.utils.ListUtils
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.test.runBlockingTest
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
@@ -27,85 +29,102 @@ class SetsViewModelTest {
     private lateinit var setsViewModel: SetsViewModel
 
 
+    @ExperimentalCoroutinesApi
     @Before
     fun setup(){
-        every {
-            mockedRepository.getCards(1)
-        } returns CardsResponse(ListUtils.createCardsList(0), HttpURLConnection.HTTP_OK)
+        coEvery {
+            mockedRepository.getCache()
+        } returns ListUtils.createCardsList(13)
 
-        setsViewModel = SetsViewModel(mockedRepository)
+        coroutinesTestRule.testDispatcher.runBlockingTest{
+            setsViewModel = SetsViewModel(mockedRepository, coroutinesTestRule.testDispatcherProvider)
+        }
     }
 
 
+    @ExperimentalCoroutinesApi
     @Test
-    fun whenPage1Requested_shouldReturnCardsList(){
-        val mockedItems = 13
-        every {
-            mockedRepository.getCards(any())
-        } returns CardsResponse(ListUtils.createCardsList(mockedItems), HttpURLConnection.HTTP_OK)
+    fun whenPageRequested_shouldReturnCardsList(){
+        coroutinesTestRule.testDispatcher.runBlockingTest{
 
-        setsViewModel.loadCards()
+            val mockedItems = 10
+            val totalItems = (setsViewModel.getData().value?.size?.plus(mockedItems))
+            coEvery {
+                mockedRepository.getCards(any())
+            } returns CardsResponse(ListUtils.createCardsList(mockedItems), HttpURLConnection.HTTP_OK)
 
-        assertEquals(
-            setsViewModel.getData().value?.size,
-            mockedItems)
+            setsViewModel.loadCards()
+
+            assertEquals(
+                setsViewModel.getData().value?.size,
+                totalItems)
+
+        }
     }
 
+    @ExperimentalCoroutinesApi
     @Test
     fun whenRefreshRequested_shouldReturnCardsList(){
-        var currentPage = 1
-        val mockedItems = 11
-        every {
-            mockedRepository.getCards(any())
-        } returns CardsResponse(ListUtils.createCardsList(mockedItems), HttpURLConnection.HTTP_OK)
+        coroutinesTestRule.testDispatcher.runBlockingTest{
+
+            var currentPage = 1
+            val mockedItems = 11
+            coEvery {
+                mockedRepository.getCards(any())
+            } returns CardsResponse(ListUtils.createCardsList(mockedItems), HttpURLConnection.HTTP_OK)
 
 
-        //Page 1
-        setsViewModel.refresh()
-        assertEquals(
-            setsViewModel.getData().value?.size,
-            (mockedItems * currentPage))
-        assertEquals(
-            setsViewModel.getPage(),
-            currentPage)
+            //Page 1
+            setsViewModel.refresh()
+            assertEquals(
+                setsViewModel.getData().value?.size,
+                (mockedItems * currentPage))
+            assertEquals(
+                setsViewModel.getPage(),
+                currentPage)
 
 
-        //Page 2
-        currentPage = 2
-        setsViewModel.loadCards()
-        assertEquals(
-            setsViewModel.getData().value?.size,
-            (mockedItems * currentPage))
-        assertEquals(
-            setsViewModel.getPage(),
-            currentPage)
+            //Page 2
+            currentPage = 2
+            setsViewModel.loadCards()
+            assertEquals(
+                setsViewModel.getData().value?.size,
+                (mockedItems * currentPage))
+            assertEquals(
+                setsViewModel.getPage(),
+                currentPage)
 
 
-        //Page 1 refreshed
-        currentPage = 1
-        setsViewModel.refresh()
-        assertEquals(
-            setsViewModel.getData().value?.size,
-            (mockedItems * currentPage))
-        assertEquals(
-            setsViewModel.getPage(),
-            currentPage)
+            //Page 1 refreshed
+            currentPage = 1
+            setsViewModel.refresh()
+            assertEquals(
+                setsViewModel.getData().value?.size,
+                (mockedItems * currentPage))
+            assertEquals(
+                setsViewModel.getPage(),
+                currentPage)
 
-
+        }
     }
 
+    @ExperimentalCoroutinesApi
     @Test
     fun whenConnectionError_shouldDisplayError(){
-        every {
-            mockedRepository.getCards(any())
-        } returns CardsResponse(ListUtils.createCardsList(0), HttpURLConnection.HTTP_BAD_REQUEST)
+        coroutinesTestRule.testDispatcher.runBlockingTest{
 
-        setsViewModel.loadCards()
+            coEvery {
+                mockedRepository.getCards(any())
+            } returns CardsResponse(ListUtils.createCardsList(0), HttpURLConnection.HTTP_BAD_REQUEST)
 
-        assertEquals(
-            setsViewModel.getViewState().value,
-            SetsViewModelState.Error(R.string.generic_network_error)
-        )
+            setsViewModel.loadCards()
+
+            assertEquals(
+                setsViewModel.getViewState().value,
+                SetsViewModelState.Error(R.string.generic_network_error)
+            )
+
+        }
     }
 
 }

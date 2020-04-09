@@ -1,5 +1,8 @@
 <resources>
     <string name="app_name">Bootcamp Magic</string>
-
+    <string name="cancelar">Cancelar</string>
+    <string name="procurar_por_cartas">Procurar por cartas</string>
     <string name="generic_network_error">Network error</string>
+    <string name="titulo_tab_sets">Sets</string>
+    <string name="titulo_tab_favoritos">Favoritos</string>
 </resources>

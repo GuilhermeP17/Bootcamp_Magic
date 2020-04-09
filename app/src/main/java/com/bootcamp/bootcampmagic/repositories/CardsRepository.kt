@@ -1,56 +1,79 @@
 package com.bootcamp.bootcampmagic.repositories
 
+import com.bootcamp.bootcampmagic.models.Card
 import com.bootcamp.bootcampmagic.models.CardsResponse
+import com.bootcamp.bootcampmagic.utils.DefaultDispatcherProvider
+import com.bootcamp.bootcampmagic.utils.DispatcherProvider
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.net.HttpURLConnection
 
 class CardsRepository(
     private val dataSource: CardsDataSource,
-    private val databaseDao: CardsDao
+    private val databaseDao: CardsDao,
+    private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
 ){
 
-    fun getCards(page: Int): CardsResponse {
-        val cardsResponse = CardsResponse(ArrayList())
-        val response = dataSource.getCards(page).execute()
-        cardsResponse.errorCode = response.code()
-        when(response.code()){
-
-            HttpURLConnection.HTTP_OK ->
-                response.body()?.let { body ->
-                    if(body.cards.isNotEmpty()){
-                        cardsResponse.cards = body.cards
-                        if(page == 1){
-                            databaseDao.updateData(body.cards)
-                        }
-                    }
-                }
-
-        }
-        if(page == 1){
-            if(cardsResponse.cards.isEmpty()){
-                cardsResponse.cards = databaseDao.getAll()
-                cardsResponse.errorCode = HttpURLConnection.HTTP_OK
-            }
-        }
-
-        return cardsResponse
+    suspend fun getCache(): List<Card> = withContext(dispatchers.io()) {
+        databaseDao.getAll()
     }
 
-    fun searchCards(page: Int, filter: String): CardsResponse {
-        val cardsResponse = CardsResponse(ArrayList())
-        val response = dataSource.getCards(page, filter).execute()
-        cardsResponse.errorCode = response.code()
-        when(response.code()){
 
-            HttpURLConnection.HTTP_OK ->
-                response.body()?.let {
-                    if(it.cards.isNotEmpty()){
-                        cardsResponse.cards = it.cards
+    suspend fun getCards(page: Int): CardsResponse = withContext(dispatchers.io()) {
+        CardsResponse(ArrayList()).apply {
+
+            val response = dataSource.getCards(page).execute()
+            this.errorCode = response.code()
+            when(response.code()){
+
+                HttpURLConnection.HTTP_OK ->
+                    response.body()?.let { body ->
+                        if(body.cards.isNotEmpty()){
+                            this.cards = body.cards
+
+                            //Filter
+                            for(card in this.cards){
+                                if(card.imageUrl == null){
+                                    card.imageUrl = "..."
+                                }
+                                if(card.types.isNotEmpty()){
+                                    card.type = card.types[0]
+                                }
+                            }
+
+                            if(page == 1){
+                                databaseDao.updateData(body.cards)
+                            }
+                        }
                     }
-                }
 
+            }
         }
+    }
 
-        return cardsResponse
+    suspend fun searchCards(page: Int, filter: String): CardsResponse = withContext(dispatchers.io())  {
+        CardsResponse(ArrayList()).apply {
+
+            val response = dataSource.getCards(page, filter).execute()
+            this.errorCode = response.code()
+            when(response.code()){
+
+                HttpURLConnection.HTTP_OK ->
+                    response.body()?.let { body ->
+                        if(body.cards.isNotEmpty()){
+                            this.cards = body.cards
+
+                            //Filter
+                            for(card in this.cards){
+                                if(card.imageUrl == null){
+                                    card.imageUrl = "..."
+                                }
+                            }
+                        }
+                    }
+
+            }
+        }
     }
 
 }
