@@ -1,10 +1,12 @@
 package com.bootcamp.bootcampmagic.ui
 
+import android.opengl.Visibility
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
@@ -19,6 +21,7 @@ import com.bootcamp.bootcampmagic.utils.App
 import com.bootcamp.bootcampmagic.viewmodels.SetsViewModel
 import com.bootcamp.bootcampmagic.viewmodels.SetsViewModelFactory
 import com.bootcamp.bootcampmagic.viewmodels.SetsViewModelState
+import kotlinx.android.synthetic.main.collapsing_toolbar.*
 import kotlinx.android.synthetic.main.fragment_set.*
 
 
@@ -32,7 +35,6 @@ class SetsFragment() : Fragment() {
         }
     }
 
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -43,9 +45,16 @@ class SetsFragment() : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        //(activity as AppCompatActivity).setSupportActionBar(toolbar)
 
-        //recycler_cards.visibility = View.GONE
+        search_cards.doOnTextChanged { text, start, count, after ->
+            viewModel.searchCard(text.toString())
+        }
+
+        btn_cancelar.setOnClickListener {
+            search_cards.setText("")
+            viewModel.refresh()
+        }
+
         setupRecyclerView()
         setupObservables()
     }
@@ -93,17 +102,21 @@ class SetsFragment() : Fragment() {
                     refresh()
                 }
 
+                is SetsViewModelState.loadinContent ->
+                    recycler_cards.visibility = View.GONE
+
             }
         })
+
         viewModel.getBackgroundImage().observe(viewLifecycleOwner, Observer {
             (activity as MainActivity).setBackgroundImage(it)
         })
+
         viewModel.getData().observe(viewLifecycleOwner, Observer {
             if(it.isNotEmpty()){
                 when(isRefreshing){
                     true -> {
                         adapterCards.setItems(it)
-                        //progress_circular.visibility = View.GONE
                     }
                     else -> adapterCards.addItems(it)
                 }
@@ -118,7 +131,6 @@ class SetsFragment() : Fragment() {
     }
 
     private fun showErrorMessage(errorMessage: String){
-        //progress_circular.visibility = View.GONE
         Toast.makeText(context, errorMessage, Toast.LENGTH_LONG).show()
     }
 }

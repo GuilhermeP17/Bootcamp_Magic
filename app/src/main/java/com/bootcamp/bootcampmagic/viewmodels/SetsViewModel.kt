@@ -1,5 +1,6 @@
 package com.bootcamp.bootcampmagic.viewmodels
 
+import android.service.autofill.Dataset
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -12,10 +13,10 @@ import com.bootcamp.bootcampmagic.utils.DispatcherProvider
 import kotlinx.coroutines.*
 import java.net.HttpURLConnection
 
-class SetsViewModel (
+class SetsViewModel(
     private val repository: CardsRepository,
     private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
-): ViewModel() {
+) : ViewModel() {
 
     private val state = MutableLiveData<SetsViewModelState>()
     private var page = 1
@@ -23,13 +24,15 @@ class SetsViewModel (
     private val data = MutableLiveData<MutableList<Card>>().apply {
         value = mutableListOf()
     }
+    private val dataSearch = MutableLiveData<MutableList<Card>>()
+
 
     init {
         CoroutineScope(dispatchers.default()).launch {
             repository.getCache().let {
                 withContext(dispatchers.main()) {
-                    if(it.isNotEmpty()){
-                        data.value?.let {dataList ->
+                    if (it.isNotEmpty()) {
+                        data.value?.let { dataList ->
                             dataList.addAll(it)
                             page++
                             data.notifyObserver()
@@ -48,25 +51,27 @@ class SetsViewModel (
     fun getPage(): Int = (page - 1)
     fun getData(): MutableLiveData<MutableList<Card>> = data
     fun getBackgroundImage(): MutableLiveData<String> = backgroundImage
+    fun getDataSearch(): MutableLiveData<MutableList<Card>> = dataSearch
 
-    fun refresh(){
+    fun refresh() {
         page = 1
         loadCards()
     }
 
-    fun loadCards(){
+    fun loadCards() {
         CoroutineScope(dispatchers.default()).launch {
             repository.getCards(page).let {
                 withContext(dispatchers.main()) {
 
                     it.let {
-                        when(it.errorCode){
+                        when (it.errorCode) {
                             HttpURLConnection.HTTP_OK ->
-                                if(it.cards.isNotEmpty()){
-                                    data.value?.let {dataList ->
-                                        if(page == 1){
+                                if (it.cards.isNotEmpty()) {
+                                    data.value?.let { dataList ->
+                                        if (page == 1) {
                                             dataList.clear()
-                                            backgroundImage.value = it.cards[it.cards.indices.random()].imageUrl
+                                            backgroundImage.value =
+                                                it.cards[it.cards.indices.random()].imageUrl
                                         }
                                         dataList.addAll(it.cards)
                                         page++
@@ -76,7 +81,37 @@ class SetsViewModel (
 
 
                             else ->
-                                state.value = SetsViewModelState.Error(R.string.generic_network_error)
+                                state.value =
+                                    SetsViewModelState.Error(R.string.generic_network_error)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    fun searchCard(cardName: String) {
+        state.value = SetsViewModelState.loadinContent
+
+        CoroutineScope(dispatchers.default()).launch {
+            repository.searchCards(1, cardName).let {
+                withContext(dispatchers.main()) {
+                    it.let {
+                        when (it.errorCode) {
+                            HttpURLConnection.HTTP_OK ->
+                                if (it.cards.isNotEmpty()) {
+                                    dataSearch.value?.let { dataList ->
+                                        dataList.clear()
+                                        backgroundImage.value =
+                                            it.cards[it.cards.indices.random()].imageUrl
+                                        dataList.addAll(it.cards)
+                                        dataSearch.notifyObserver()
+                                    }
+                                }
+
+                            else ->
+                                state.value =
+                                    SetsViewModelState.Error(R.string.generic_network_error)
                         }
                     }
                 }
