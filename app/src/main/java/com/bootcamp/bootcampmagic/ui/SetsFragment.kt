@@ -107,9 +107,11 @@ class SetsFragment() : Fragment() {
                     refresh()
                 }
 
-                is SetsViewModelState.loadinContent ->
+                is SetsViewModelState.loadinContent ->{
                     recycler_cards.visibility = View.GONE
-
+                    loadingContent.visibility = View.VISIBLE
+                    adapterCards.isSearhing()
+                }
             }
         })
 
@@ -119,6 +121,8 @@ class SetsFragment() : Fragment() {
 
         viewModel.getData().observe(viewLifecycleOwner, Observer {
             if(it.isNotEmpty()){
+                loadingContent.visibility = View.GONE
+                recycler_cards.visibility = View.VISIBLE
                 when(isRefreshing){
                     true -> {
                         adapterCards.setItems(it)

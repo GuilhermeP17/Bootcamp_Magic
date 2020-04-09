@@ -44,6 +44,11 @@ class AdapterCards(
         listCards.addAll(cardToListItem(items))
         notifyItemRangeChanged(totalItems, items.size)
     }
+
+    fun isSearhing(){
+        listCards.clear()
+    }
+
     override fun getItemCount(): Int {
         return listCards.size
     }

@@ -8,6 +8,13 @@
 
     <include layout="@layout/collapsing_toolbar"/>
 
+    <ProgressBar
+        android:id="@+id/loadingContent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="visible"/>
+
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipeRefresh"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"

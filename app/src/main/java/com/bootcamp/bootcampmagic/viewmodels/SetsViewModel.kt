@@ -24,7 +24,6 @@ class SetsViewModel(
     private val data = MutableLiveData<MutableList<Card>>().apply {
         value = mutableListOf()
     }
-    private val dataSearch = MutableLiveData<MutableList<Card>>()
 
 
     init {
@@ -54,7 +53,6 @@ class SetsViewModel(
     fun getPage(): Int = (page - 1)
     fun getData(): MutableLiveData<MutableList<Card>> = data
     fun getBackgroundImage(): MutableLiveData<String> = backgroundImage
-    fun getDataSearch(): MutableLiveData<MutableList<Card>> = dataSearch
 
     fun refresh() {
         page = 1
@@ -107,12 +105,12 @@ class SetsViewModel(
                         when (it.errorCode) {
                             HttpURLConnection.HTTP_OK ->
                                 if (it.cards.isNotEmpty()) {
-                                    dataSearch.value?.let { dataList ->
+                                    data.value?.let { dataList ->
                                         dataList.clear()
                                         backgroundImage.value =
                                             it.cards[it.cards.indices.random()].imageUrl
                                         dataList.addAll(it.cards)
-                                        dataSearch.notifyObserver()
+                                        data.notifyObserver()
                                     }
                                 }
 
