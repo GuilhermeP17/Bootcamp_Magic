@@ -8,15 +8,20 @@
 
     <include layout="@layout/collapsing_toolbar"/>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler_cards"
-        android:paddingTop="@dimen/recyclerview_margin_top"
-        android:layout_marginHorizontal="@dimen/recyclerview_margin_horizontal"
-        android:clipToPadding="false"
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipeRefresh"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:spanCount="3"
-        app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
-        tools:listitem="@layout/adapter_cards"/>
+        android:layout_height="wrap_content">
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_cards"
+            android:paddingTop="@dimen/recyclerview_margin_top"
+            android:layout_marginHorizontal="@dimen/recyclerview_margin_horizontal"
+            android:clipToPadding="false"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:spanCount="3"
+            app:layoutManager="androidx.recyclerview.widget.GridLayoutManager"
+            tools:listitem="@layout/adapter_cards"/>
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
