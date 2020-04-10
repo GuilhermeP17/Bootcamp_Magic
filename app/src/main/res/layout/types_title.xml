@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView android:id="@+id/typesTitle"
+    android:layout_marginTop="@dimen/header_types_margin_top"
+    android:layout_marginBottom="@dimen/header_types_margin_bottom"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:background="?attr/selectableItemBackgroundBorderless"
+    style="@style/Text.Header.Types"
+    xmlns:android="http://schemas.android.com/apk/res/android" />

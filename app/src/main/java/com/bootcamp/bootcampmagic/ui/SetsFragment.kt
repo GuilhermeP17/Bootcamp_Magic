@@ -9,7 +9,6 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
 import com.bootcamp.bootcampmagic.R
-import com.bootcamp.bootcampmagic.adapter.AdapterCards
 import com.bootcamp.bootcampmagic.adapter.EndlessScrollListener
 import com.bootcamp.bootcampmagic.adapter.GridSpacingItemDecoration
 import com.bootcamp.bootcampmagic.adapter.SetsAdapter
@@ -25,7 +24,8 @@ import kotlinx.android.synthetic.main.fragment_set.*
 class SetsFragment() : Fragment() {
 
 
-    private val adapter = SetsAdapter()
+    private lateinit var adapter: SetsAdapter
+    private lateinit var scrollListener: EndlessScrollListener
     private val viewModel: SetsViewModel by viewModels{
         App().let {
             SetsViewModelFactory(MtgRepository(it.getCardsDao(), it.getMtgDataSource()))
@@ -61,15 +61,17 @@ class SetsFragment() : Fragment() {
 
 
                 is SetsViewModelState.BackgroundImage ->
-                    (activity as MainActivity).setBackgroundImage(state.url)
+                    (activity as ImmersiveActivity).setBackgroundImage(state.url)
 
 
                 is SetsViewModelState.CacheLoaded ->
                     viewModel.refreshData()
 
 
-                is SetsViewModelState.AddData ->
+                is SetsViewModelState.AddData ->{
                     adapter.addItems(state.items)
+                    scrollListener.resume()
+                }
 
             }
             viewModel.clearViewState()
@@ -77,6 +79,13 @@ class SetsFragment() : Fragment() {
 
 
         viewModel.getData().observe(viewLifecycleOwner, Observer { items ->
+            if(items.isNotEmpty()){
+                adapter.setItems(items)
+            }
+        })
+
+
+        viewModel.getSearchData().observe(viewLifecycleOwner, Observer { items ->
             if(items.isNotEmpty()){
                 adapter.setItems(items)
             }
@@ -94,21 +103,18 @@ class SetsFragment() : Fragment() {
         }
         recycler_cards.layoutManager = layoutManager
         recycler_cards.addItemDecoration(GridSpacingItemDecoration(resources.getDimensionPixelSize(R.dimen.grid_item_margin)))
-        adapter.setClickListener(clickListener)
+        adapter = SetsAdapter(clickListener)
         recycler_cards.adapter = adapter
 
-
-        object : EndlessScrollListener(recycler_cards){
+        scrollListener = object: EndlessScrollListener(recycler_cards){
             override fun onFirstItem() {
             }
             override fun onScroll() {
             }
             override fun onLoadMore() {
-                this.reset()
                 viewModel.loadMore()
             }
         }
-
 
         swipeRefresh.setOnRefreshListener {
             swipeRefresh.isRefreshing = false

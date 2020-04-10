@@ -76,7 +76,7 @@ class MtgRepositoryTest{
             mockedServer.enqueue(mockedResponse)
 
 
-            val response = repository.getCards(1, "set1")
+            val response = repository.getCards(1, "set1", false)
 
 
             Assert.assertTrue(response.code == HttpURLConnection.HTTP_OK)

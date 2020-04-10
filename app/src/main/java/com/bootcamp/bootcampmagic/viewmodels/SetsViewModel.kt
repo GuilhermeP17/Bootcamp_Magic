@@ -27,16 +27,19 @@ class SetsViewModel (
     private var currentSetIndex = 0
     private var currentSet = ""
     private var currentType = ""
+    private var isRefresh = true
 
     private val data = MutableLiveData<MutableList<ListItem>>().apply {value = mutableListOf()}
     private var page = 1
 
+    private val searchdata = MutableLiveData<MutableList<ListItem>>().apply {value = mutableListOf()}
     private var searchFilter: String = ""
     private var searchPage = 1
 
     fun getViewState() = state
     fun clearViewState(){state.value = null}
     fun getData() = data
+    fun getSearchData() = searchdata
     fun getSearchFilter() = searchFilter
 
 
@@ -56,12 +59,14 @@ class SetsViewModel (
     }
 
     fun clearSearch(){
+        searchdata.value = mutableListOf()
         searchFilter = ""
         searchPage = 1
         refreshData()
     }
 
     fun refreshData(){
+        isRefresh = true
         if(searchFilter.isEmpty()){
             page = 1
             currentSetIndex = 0
@@ -120,24 +125,22 @@ class SetsViewModel (
                 getSets()
             }
             sets?.get(currentSetIndex)?.let { set ->
-                repository.getCards(page, set.code).let { response ->
+                repository.getCards(page, set.code, isRefresh).let { response ->
                     when(response.code){
 
                         HttpURLConnection.HTTP_OK ->{
+                            if(response.cards.isEmpty()){
+                                loadNewSet()
+                                return@launch
+                            }
                             response.cards.let { list ->
-                                if(list.isEmpty()){
-                                    currentSetIndex++
-                                    return@launch
+                                if(isRefresh){
+                                    setBackgroundImage(list)
+                                    setData(groupItems(list))
+                                }else{
+                                    addData(groupItems(list))
                                 }
-
-                                when(page){
-                                    1 ->{
-                                        setBackgroundImage(list)
-                                        setData(groupItems(list))
-                                    }
-
-                                    else -> addData(groupItems(list))
-                                }
+                                isRefresh = false
                                 page++
                             }
                         }
@@ -159,10 +162,12 @@ class SetsViewModel (
 
                     HttpURLConnection.HTTP_OK ->{
                         response.cards.let { list->
-                            when(page){
-                                1 -> setData(list)
-                                else -> addData(list)
+                            if(isRefresh){
+                                setSearchData(list)
+                            }else{
+                                addSearchData(list)
                             }
+                            isRefresh = false
                             searchPage++
                         }
                     }
@@ -182,7 +187,7 @@ class SetsViewModel (
                 if(item is Card){
                     if(item.set != currentSet){
                         currentSet = item.set
-                        this.add(CardSet("", currentSet))
+                        this.add(CardSet(currentSet, item.setName))
                     }
                     if(item.type != currentType){
                         currentType = item.type
@@ -195,6 +200,11 @@ class SetsViewModel (
     }
 
 
+    private fun loadNewSet() {
+        currentSetIndex++
+        page = 1
+        getCards()
+    }
 
 
     private suspend fun setCardsSets(items: List<CardSet>) = withContext(dispatchers.main()) {
@@ -205,8 +215,17 @@ class SetsViewModel (
         data.value = items.toMutableList()
     }
 
+    private suspend fun setSearchData(items: List<ListItem>) = withContext(dispatchers.main()) {
+        searchdata.value = items.toMutableList()
+    }
+
     private suspend fun addData(items: List<ListItem>) = withContext(dispatchers.main()) {
         data.value?.addAll(items)
+        state.value = SetsViewModelState.AddData(items)
+    }
+
+    private suspend fun addSearchData(items: List<ListItem>) = withContext(dispatchers.main()) {
+        searchdata.value?.addAll(items)
         state.value = SetsViewModelState.AddData(items)
     }
 

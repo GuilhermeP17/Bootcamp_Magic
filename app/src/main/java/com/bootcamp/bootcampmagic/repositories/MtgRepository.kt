@@ -31,7 +31,7 @@ class MtgRepository(
         }
     }
 
-    suspend fun getCards(page: Int, set: String): CardsResponse = withContext(dispatcher.io()) {
+    suspend fun getCards(page: Int, set: String, saveCache: Boolean): CardsResponse = withContext(dispatcher.io()) {
         CardsResponse(mutableListOf()).apply {
             dataSource.getCards(page, set).execute().let { response ->
                 this.code = response.code()
@@ -48,7 +48,7 @@ class MtgRepository(
                             }
                         }
 
-                        if(page == 1){
+                        if(saveCache){
                             database.updateData(body.cards)
                         }
                     }

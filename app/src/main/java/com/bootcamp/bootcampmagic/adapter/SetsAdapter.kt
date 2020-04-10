@@ -13,13 +13,19 @@ import com.bootcamp.bootcampmagic.models.CardType
 import com.bootcamp.bootcampmagic.models.ListItem
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.load.resource.bitmap.RoundedCorners
+import com.bumptech.glide.request.RequestOptions
 import kotlinx.android.synthetic.main.adapter_cards.view.*
-import kotlinx.android.synthetic.main.adapter_title.view.*
+import kotlinx.android.synthetic.main.sets_title.view.*
+import kotlinx.android.synthetic.main.types_title.view.*
 
-class SetsAdapter: RecyclerView.Adapter<SetsAdapter.ViewHolder>(){
+
+class SetsAdapter(
+    private val clickListener: OnItemClickListener? = null
+): RecyclerView.Adapter<SetsAdapter.ViewHolder>(){
 
     private var itemList: MutableList<ListItem> = mutableListOf()
-    private var clickListener: OnItemClickListener? = null
+
 
 
     fun setItems(items: List<ListItem>){
@@ -46,10 +52,6 @@ class SetsAdapter: RecyclerView.Adapter<SetsAdapter.ViewHolder>(){
         notifyItemRangeChanged(totalItems, items.size)
     }
 
-    fun setClickListener(clickListener: OnItemClickListener){
-        this.clickListener = clickListener
-    }
-
     interface OnItemClickListener{
         fun onItemClicked(card: Card, position: Int)
     }
@@ -71,10 +73,10 @@ class SetsAdapter: RecyclerView.Adapter<SetsAdapter.ViewHolder>(){
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder =
         when(viewType){
             ListItem.CARD_TYPE ->
-                ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.adapter_title, parent, false))
+                ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.types_title, parent, false))
 
             ListItem.SET ->
-                ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.adapter_title, parent, false))
+                ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.sets_title, parent, false))
 
             else ->
                 ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.adapter_cards, parent, false))
@@ -89,12 +91,12 @@ class SetsAdapter: RecyclerView.Adapter<SetsAdapter.ViewHolder>(){
             when (item){
 
                 is CardSet ->{
-                    view.itemTitle.text = ("Set  " + item.name)
+                    view.setsTitle.text = item.name
                 }
 
 
                 is CardType ->{
-                    view.itemTitle.text = item.name
+                    view.typesTitle.text = item.name
                 }
 
 
@@ -102,11 +104,13 @@ class SetsAdapter: RecyclerView.Adapter<SetsAdapter.ViewHolder>(){
                     if (item.imageUrl.isEmpty()){
                         Glide.with(itemView)
                             .load(R.drawable.no_card)
+                            .apply(RequestOptions().optionalTransform(RoundedCorners(16)))
                             .into(view.img_card)
                     }else {
                         Glide.with(itemView.context)
                             .load(item.imageUrl)
                             .diskCacheStrategy(DiskCacheStrategy.ALL)
+                            .apply(RequestOptions().optionalTransform(RoundedCorners(16)))
                             .into(view.img_card)
                     }
 
