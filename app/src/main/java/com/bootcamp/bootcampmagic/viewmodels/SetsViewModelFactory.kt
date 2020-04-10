@@ -2,10 +2,10 @@ package com.bootcamp.bootcampmagic.viewmodels
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.bootcamp.bootcampmagic.repositories.CardsRepository
+import com.bootcamp.bootcampmagic.repositories.MtgRepository
 
 class SetsViewModelFactory (
-    private val repository: CardsRepository
+    private val repository: MtgRepository
 ) : ViewModelProvider.Factory {
 
     @Suppress("UNCHECKED_CAST")

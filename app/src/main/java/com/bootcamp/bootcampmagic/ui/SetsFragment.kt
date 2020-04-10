@@ -12,8 +12,9 @@ import com.bootcamp.bootcampmagic.R
 import com.bootcamp.bootcampmagic.adapter.AdapterCards
 import com.bootcamp.bootcampmagic.adapter.EndlessScrollListener
 import com.bootcamp.bootcampmagic.adapter.GridSpacingItemDecoration
+import com.bootcamp.bootcampmagic.adapter.SetsAdapter
 import com.bootcamp.bootcampmagic.models.Card
-import com.bootcamp.bootcampmagic.repositories.CardsRepository
+import com.bootcamp.bootcampmagic.repositories.MtgRepository
 import com.bootcamp.bootcampmagic.utils.App
 import com.bootcamp.bootcampmagic.viewmodels.SetsViewModel
 import com.bootcamp.bootcampmagic.viewmodels.SetsViewModelFactory
@@ -23,13 +24,14 @@ import kotlinx.android.synthetic.main.fragment_set.*
 
 class SetsFragment() : Fragment() {
 
-    private lateinit var adapterCards: AdapterCards
-    private var isRefreshing = true
+
+    private val adapter = SetsAdapter()
     private val viewModel: SetsViewModel by viewModels{
         App().let {
-            SetsViewModelFactory(CardsRepository(it.getCardsDataSource(), it.getCardsDao()))
+            SetsViewModelFactory(MtgRepository(it.getCardsDao(), it.getMtgDataSource()))
         }
     }
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -41,89 +43,92 @@ class SetsFragment() : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        setupRecyclerView()
+
         setupObservables()
+        setupRecyclerView()
+    }
+
+
+    private fun setupObservables(){
+        viewModel.getViewState().observe(viewLifecycleOwner, Observer { state ->
+            if(state == null) return@Observer
+            when(state){
+
+                is SetsViewModelState.Error ->
+                    when(state.message){
+                        R.string.generic_network_error -> showNetworkError(state.message)
+                    }
+
+
+                is SetsViewModelState.BackgroundImage ->
+                    (activity as MainActivity).setBackgroundImage(state.url)
+
+
+                is SetsViewModelState.CacheLoaded ->
+                    viewModel.refreshData()
+
+
+                is SetsViewModelState.AddData ->
+                    adapter.addItems(state.items)
+
+            }
+            viewModel.clearViewState()
+        })
+
+
+        viewModel.getData().observe(viewLifecycleOwner, Observer { items ->
+            if(items.isNotEmpty()){
+                adapter.setItems(items)
+            }
+        })
     }
 
 
     private fun setupRecyclerView(){
-
-        adapterCards = AdapterCards(clickListener)
-        val spanCount = 3
-        val layoutManager = GridLayoutManager(context, spanCount)
+        val listColumns = 3
+        val layoutManager = GridLayoutManager(context, listColumns)
         layoutManager.spanSizeLookup = object: GridLayoutManager.SpanSizeLookup(){
             override fun getSpanSize(position: Int): Int {
-                return if (adapterCards.isHeader(position)) layoutManager.spanCount else 1
+                return if (adapter.isHeader(position)) layoutManager.spanCount else 1
             }
         }
         recycler_cards.layoutManager = layoutManager
         recycler_cards.addItemDecoration(GridSpacingItemDecoration(resources.getDimensionPixelSize(R.dimen.grid_item_margin)))
-        recycler_cards.adapter = adapterCards
+        adapter.setClickListener(clickListener)
+        recycler_cards.adapter = adapter
 
-        val endlessScrollListener = object : EndlessScrollListener(recycler_cards){
+
+        object : EndlessScrollListener(recycler_cards){
             override fun onFirstItem() {
             }
             override fun onScroll() {
             }
             override fun onLoadMore() {
-                viewModel.loadCards()
+                this.reset()
+                viewModel.loadMore()
             }
         }
 
-        swipeRefresh.setOnRefreshListener {
-            refresh()
-            swipeRefresh.isRefreshing = false
-        }
 
+        swipeRefresh.setOnRefreshListener {
+            swipeRefresh.isRefreshing = false
+            viewModel.refreshData()
+        }
     }
 
-    private val clickListener = object: AdapterCards.OnItemClickListener{
+
+    private val clickListener = object: SetsAdapter.OnItemClickListener{
         override fun onItemClicked(card: Card, position: Int) {
         }
     }
 
-    private fun setupObservables(){
-        viewModel.getViewState().observe(viewLifecycleOwner, Observer {
-            when(it){
-
-                is SetsViewModelState.Error ->
-                    when(it.message){
-                        R.string.generic_network_error -> showNetworkError(it.message)
-                    }
-
-                is SetsViewModelState.CacheLoaded -> {
-                    refresh()
-                }
-
-            }
-        })
-        viewModel.getBackgroundImage().observe(viewLifecycleOwner, Observer {
-            (activity as MainActivity).setBackgroundImage(it)
-        })
-        viewModel.getData().observe(viewLifecycleOwner, Observer {
-            if(it.isNotEmpty()){
-                when(isRefreshing){
-                    true -> {
-                        adapterCards.setItems(it)
-                    }
-                    else -> adapterCards.addItems(it)
-                }
-                isRefreshing = false
-            }
-        })
-    }
-
-    private fun refresh(){
-        isRefreshing = true
-        viewModel.refresh()
-    }
 
     private fun showNetworkError(errorMessage: Int){
         activity?.findViewById<View>(R.id.tab_set_favorites)?.let {
             Snackbar.make(it, errorMessage, Snackbar.LENGTH_LONG)
                 .setAnchorView(it)
                 .setAction(R.string.try_again) {
-                    viewModel.loadCards()
+                    viewModel.loadMore()
                 }
                 .show()
         }

@@ -1,6 +1,6 @@
 package com.bootcamp.bootcampmagic.adapter
 
-import android.view.LayoutInflater
+/*import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.Nullable
@@ -13,9 +13,9 @@ import com.bootcamp.bootcampmagic.models.ListItem
 import com.bumptech.glide.Glide
 import com.bumptech.glide.load.engine.DiskCacheStrategy
 import kotlinx.android.synthetic.main.adapter_cards.view.*
-import kotlinx.android.synthetic.main.adapter_title.view.*
+import kotlinx.android.synthetic.main.adapter_title.view.**/
 
-class AdapterCards(
+class AdapterCards/*(
     private val itemClickListener: OnItemClickListener?
 ) : RecyclerView.Adapter<AdapterCards.CardViewHolder>(){
 
@@ -144,4 +144,4 @@ class AdapterCards(
     interface OnItemClickListener{
         fun onItemClicked(card: Card, position: Int)
     }
-}
+}*/

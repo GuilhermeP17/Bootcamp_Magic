@@ -33,6 +33,6 @@ data class Card (
         imageUrl,
         favorite)
 
-    override fun getItemType(): Int = ListItem.ITEM
+    override fun getItemType(): Int = ListItem.CARD
 
 }

@@ -9,7 +9,7 @@ abstract class EndlessScrollListener(
 ) : RecyclerView.OnScrollListener() {
 
     private val layoutManager: RecyclerView.LayoutManager = recyclerView.layoutManager!!
-    private val percentage = 50
+    private val percentage = 70
     private var currentPosition: Position = Position.START
 
     abstract fun onFirstItem()
