@@ -1,10 +1,11 @@
 package com.bootcamp.bootcampmagic.ui
 
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
@@ -44,12 +45,21 @@ class SetsFragment() : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        search_cards.doOnTextChanged { text, start, count, after ->
-            viewModel.searchCard(text.toString())
-        }
+        search_cards.addTextChangedListener(object: TextWatcher{
+            override fun afterTextChanged(s: Editable?) {}
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                if(search_cards.hasFocus())
+                    viewModel.searchCard(s.toString())
+            }
+        })
 
         btn_cancelar.setOnClickListener {
+            search_cards.clearFocus()
             search_cards.setText("")
+
             viewModel.refresh()
         }
 
@@ -100,7 +110,11 @@ class SetsFragment() : Fragment() {
 
                 is SetsViewModelState.Error ->
                     when(it.message){
-                        R.string.generic_network_error -> showNetworkError(it.message)
+                        R.string.generic_network_error -> {
+                            loadingContent.visibility = View.GONE
+                            recycler_cards.visibility = View.VISIBLE
+                            showNetworkError(it.message)
+                        }
                     }
 
                 is SetsViewModelState.CacheLoaded -> {

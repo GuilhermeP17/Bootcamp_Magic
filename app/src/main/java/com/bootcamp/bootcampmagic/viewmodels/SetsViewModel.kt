@@ -27,26 +27,7 @@ class SetsViewModel(
 
 
     init {
-        CoroutineScope(dispatchers.default()).launch {
-            try {
-                repository.getCache().let {
-                    withContext(dispatchers.main()) {
-                        if (it.isNotEmpty()) {
-                            data.value?.let { dataList ->
-                                dataList.addAll(it)
-                                page++
-                                data.notifyObserver()
-                                //backgroundImage.value = it[it.indices.random()].imageUrl
-                            }
-                        }
-                    }
-                }
-            } finally {
-            }
-            withContext(dispatchers.main()) {
-                state.value = SetsViewModelState.CacheLoaded
-            }
-        }
+        getCardsFromCache()
     }
 
     fun getViewState(): LiveData<SetsViewModelState> = state
@@ -56,7 +37,10 @@ class SetsViewModel(
 
     fun refresh() {
         page = 1
-        loadCards()
+        if(state.value != SetsViewModelState.Error(R.string.generic_network_error))
+            loadCards()
+        else
+            getCardsFromCache()
     }
 
     fun loadCards() {
@@ -99,27 +83,56 @@ class SetsViewModel(
         state.value = SetsViewModelState.loadinContent
 
         CoroutineScope(dispatchers.default()).launch {
-            repository.searchCards(1, cardName).let {
-                withContext(dispatchers.main()) {
-                    it.let {
-                        when (it.errorCode) {
-                            HttpURLConnection.HTTP_OK ->
-                                if (it.cards.isNotEmpty()) {
-                                    data.value?.let { dataList ->
-                                        dataList.clear()
-                                        backgroundImage.value =
-                                            it.cards[it.cards.indices.random()].imageUrl
-                                        dataList.addAll(it.cards)
-                                        data.notifyObserver()
+            try {
+                repository.searchCards(1, cardName).let {
+                    withContext(dispatchers.main()) {
+                        it.let {
+                            when (it.errorCode) {
+                                HttpURLConnection.HTTP_OK ->
+                                    if (it.cards.isNotEmpty()) {
+                                        data.value?.let { dataList ->
+                                            dataList.clear()
+                                            backgroundImage.value =
+                                                it.cards[it.cards.indices.random()].imageUrl
+                                            dataList.addAll(it.cards)
+                                            data.notifyObserver()
+                                        }
                                     }
-                                }
 
-                            else ->
-                                state.value =
-                                    SetsViewModelState.Error(R.string.generic_network_error)
+                                else ->
+                                    state.value =
+                                        SetsViewModelState.Error(R.string.generic_network_error)
+                            }
                         }
                     }
                 }
+            } catch (e: Exception) {
+                withContext(dispatchers.main()) {
+                    state.value = SetsViewModelState.Error(R.string.generic_network_error)
+                }
+            }
+        }
+    }
+
+    private fun getCardsFromCache(){
+        CoroutineScope(dispatchers.default()).launch {
+            try {
+                repository.getCache().let {
+                    withContext(dispatchers.main()) {
+                        if (it.isNotEmpty()) {
+                            data.value?.let { dataList ->
+                                dataList.addAll(it)
+                                page++
+                                data.notifyObserver()
+                                //backgroundImage.value = it[it.indices.random()].imageUrl
+                            }
+                        }
+                    }
+                }
+            } finally {
+            }
+            withContext(dispatchers.main()) {
+                state.value = SetsViewModelState.CacheLoaded
             }
         }
     }
