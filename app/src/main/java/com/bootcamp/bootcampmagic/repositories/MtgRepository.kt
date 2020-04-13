@@ -78,11 +78,4 @@ class MtgRepository(
             }
         }
     }
-
-    suspend fun getFavorites() : List<Card> {
-        return withContext(dispatcher.io()){
-            database.getAll()
-        }
-    }
-
 }
