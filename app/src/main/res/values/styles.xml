@@ -17,9 +17,15 @@
         <item name="android:textColor">@color/colorAccent</item>
     </style>
 
-    <style name="Text.Header" parent="TextAppearance.AppCompat">
-        <item name="android:textSize">@dimen/header_font_size</item>
-        <item name="android:textColor">@color/colorHeader</item>
+    <style name="Text.Header.Sets" parent="TextAppearance.AppCompat">
+        <item name="android:textSize">@dimen/header_sets_font_size</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/colorAccent</item>
+    </style>
+
+    <style name="Text.Header.Types" parent="TextAppearance.AppCompat">
+        <item name="android:textSize">@dimen/header_types_font_size</item>
+        <item name="android:textColor">@color/colorHeaderTypes</item>
     </style>
 
     <style name="SearchBar" parent="@android:style/Widget.EditText">

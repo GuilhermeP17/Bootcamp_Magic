@@ -3,14 +3,14 @@ package com.bootcamp.bootcampmagic.viewmodels
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import com.bootcamp.bootcampmagic.R
 import com.bootcamp.bootcampmagic.models.CardsResponse
-import com.bootcamp.bootcampmagic.repositories.CardsRepository
+import com.bootcamp.bootcampmagic.repositories.MtgRepository
 import com.bootcamp.bootcampmagic.utils.CoroutinesTestRule
 import com.bootcamp.bootcampmagic.utils.ListUtils
 import io.mockk.coEvery
-import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
+import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
@@ -21,9 +21,45 @@ class SetsViewModelTest {
 
     @get:Rule
     val rule = InstantTaskExecutorRule()
-    @ExperimentalCoroutinesApi
     @get:Rule
+    @ExperimentalCoroutinesApi
     var coroutinesTestRule = CoroutinesTestRule()
+
+
+    private val repository: MtgRepository = mockk()
+    private lateinit var viewModel: SetsViewModel
+
+
+    @Before
+    @ExperimentalCoroutinesApi
+    fun setup(){
+        coEvery {
+            repository.getCachedCards()
+        } returns ListUtils.createCardsList(10)
+
+        coroutinesTestRule.testDispatcher.runBlockingTest{
+            viewModel = SetsViewModel(repository, coroutinesTestRule.testDispatcherProvider)
+        }
+    }
+
+
+    @Test
+    fun whenLoadMoreRequested_shouldUpdateLiveData(){
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+    /*
 
     private val mockedRepository = mockk<CardsRepository>()
     private lateinit var setsViewModel: SetsViewModel
@@ -125,6 +161,6 @@ class SetsViewModelTest {
             )
 
         }
-    }
+    }*/
 
 }

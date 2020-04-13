@@ -74,7 +74,7 @@ abstract class EndlessScrollListener(
     }
 
 
-    fun reset(){
+    fun resume(){
         currentPosition = Position.SCROLLING
     }
 

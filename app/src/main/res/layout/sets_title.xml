@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<TextView android:id="@+id/itemTitle"
-    android:layout_marginTop="@dimen/header_margin_top"
-    android:layout_marginBottom="@dimen/header_margin_bottom"
+<TextView android:id="@+id/setsTitle"
+    android:layout_marginTop="@dimen/header_sets_margin_top"
+    android:layout_marginBottom="-40dp"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:background="?attr/selectableItemBackgroundBorderless"
-    style="@style/Text.Header"
+    style="@style/Text.Header.Sets"
     xmlns:android="http://schemas.android.com/apk/res/android" />
