@@ -22,7 +22,7 @@ class MainActivity : ImmersiveActivity() {
         val pagerAdapter = PagerAdapter(supportFragmentManager, ArrayList(), ArrayList())
 
         pagerAdapter.adicionarFragment(SetsFragment(), getString(R.string.titulo_tab_sets))
-        pagerAdapter.adicionarFragment(Fragment(), getString(R.string.titulo_tab_favoritos))
+        pagerAdapter.adicionarFragment(FavoritesFragment(), getString(R.string.titulo_tab_favoritos))
 
         return pagerAdapter
     }
