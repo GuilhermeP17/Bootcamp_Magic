@@ -139,6 +139,7 @@ class SetsFragment() : Fragment() {
     private val clickListener = object: SetsAdapter.OnItemClickListener{
         override fun onItemClicked(card: Card, position: Int) {
             view?.let {
+
                 viewModel.selectedItem.value = position
                 val action = TabbedFragmentDirections
                     .actionTabbedFragmentToOverviewFragment(ListType.SETS.value)

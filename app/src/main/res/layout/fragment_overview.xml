@@ -37,6 +37,15 @@
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
+        <com.bootcamp.bootcampmagic.views.CarouselView
+            android:id="@+id/carouselView"
+            android:layout_gravity="center"
+            android:clipToPadding="false"
+            android:overScrollMode="never"
+            android:layout_marginBottom="@dimen/btnfavorite_margin_bottom"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
 
         <TextView
             android:id="@+id/btnFavorite"
