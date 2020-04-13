@@ -1,9 +1,6 @@
 package com.bootcamp.bootcampmagic
 
-import android.app.usage.NetworkStatsManager
 import android.content.Context
-import android.net.ConnectivityManager
-import android.net.NetworkInfo
 import android.net.wifi.WifiManager
 import androidx.test.espresso.Espresso
 import androidx.test.espresso.action.ViewActions
@@ -19,7 +16,7 @@ import org.junit.runner.RunWith
 import org.junit.Rule
 
 @RunWith(AndroidJUnit4::class)
-class MainActivityTest {
+class SetsFragmentTest {
 
     @get:Rule
     val activityRule = ActivityTestRule(MainActivity::class.java)
@@ -28,13 +25,13 @@ class MainActivityTest {
         val wifi: WifiManager =
             activityRule.activity.getSystemService(Context.WIFI_SERVICE) as WifiManager
 
-        wifi.setWifiEnabled(false)
+        wifi.setWifiEnabled(true)
     }
 
     private fun turnOffConnection() {
         val wifi: WifiManager =
             activityRule.activity.getSystemService(Context.WIFI_SERVICE) as WifiManager
-        wifi.setWifiEnabled(true)
+        wifi.setWifiEnabled(false)
     }
 
     @Test
@@ -48,7 +45,7 @@ class MainActivityTest {
         Espresso.onView(ViewMatchers.withId(R.id.search_cards))
             .perform(ViewActions.typeText("Archangel"))
 
-        Thread.sleep(5000)
+        Thread.sleep(6000)
 
         Espresso.onView(ViewMatchers.withId(R.id.recycler_cards))
             .check(ViewAssertions.matches(ViewMatchers.isDisplayed()))
@@ -56,15 +53,14 @@ class MainActivityTest {
 
     @Test
     fun giveCancelButtonAction_shouldClearEditText() {
+        Espresso.onView(ViewMatchers.withId(R.id.search_cards))
+            .perform(ViewActions.typeText("Archangel"))
+
         Espresso.onView(ViewMatchers.withId(R.id.btn_cancelar))
             .perform(ViewActions.click())
 
-        Espresso.onView(ViewMatchers.withId(R.id.loadingContent))
-            .check(ViewAssertions.matches(ViewMatchers.isDisplayed()))
-
         Espresso.onView(ViewMatchers.withId(R.id.search_cards))
             .check(ViewAssertions.matches(ViewMatchers.withText("")))
-
     }
 
     /*@Test
