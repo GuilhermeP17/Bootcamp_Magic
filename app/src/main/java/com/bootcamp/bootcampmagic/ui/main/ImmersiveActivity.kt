@@ -1,4 +1,4 @@
-package com.bootcamp.bootcampmagic.ui
+package com.bootcamp.bootcampmagic.ui.main
 
 import android.os.Build
 import android.os.Bundle

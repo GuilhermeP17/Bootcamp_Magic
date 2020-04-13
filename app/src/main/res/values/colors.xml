@@ -6,6 +6,7 @@
     <color name="colorBackground">#E41C1C1C</color>
     <color name="searchHintColor">#EEB1B1B1</color>
     <color name="tabBackground">#F31C1C1C</color>
+    <color name="colorRipple">#52FFFFFF</color>
 
     <color name="colorHeaderTypes">#EEB1B1B1</color>
 </resources>

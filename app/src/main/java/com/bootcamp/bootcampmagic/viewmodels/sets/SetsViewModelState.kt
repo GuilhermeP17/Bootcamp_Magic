@@ -1,4 +1,4 @@
-package com.bootcamp.bootcampmagic.viewmodels
+package com.bootcamp.bootcampmagic.viewmodels.sets
 
 import androidx.annotation.StringRes
 import com.bootcamp.bootcampmagic.models.ListItem

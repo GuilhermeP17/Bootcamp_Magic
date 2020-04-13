@@ -1,4 +1,4 @@
-package com.bootcamp.bootcampmagic.viewmodels
+package com.bootcamp.bootcampmagic.viewmodels.sets
 
 import androidx.annotation.StringRes
 import androidx.lifecycle.MutableLiveData
@@ -23,6 +23,9 @@ class SetsViewModel (
 ): ViewModel() {
 
     private val state = MutableLiveData<SetsViewModelState>()
+    val selectedItem = MutableLiveData<Int>().apply {value = 0}
+
+
     private var sets: List<CardSet>? = null
     private var currentSetIndex = 0
     private var currentSet = ""
@@ -45,7 +48,11 @@ class SetsViewModel (
 
 
     init {
-        loadCachedCards()
+        data.value?.let {
+            if(it.size <= 0){
+                loadCachedCards()
+            }
+        }
     }
 
     fun search(filter: String){
@@ -221,16 +228,25 @@ class SetsViewModel (
 
     private suspend fun addData(items: List<ListItem>) = withContext(dispatchers.main()) {
         data.value?.addAll(items)
-        state.value = SetsViewModelState.AddData(items)
+        state.value =
+            SetsViewModelState.AddData(
+                items
+            )
     }
 
     private suspend fun addSearchData(items: List<ListItem>) = withContext(dispatchers.main()) {
         searchdata.value?.addAll(items)
-        state.value = SetsViewModelState.AddData(items)
+        state.value =
+            SetsViewModelState.AddData(
+                items
+            )
     }
 
     private suspend fun setError(@StringRes message: Int) = withContext(dispatchers.main()) {
-        state.value = SetsViewModelState.Error(message)
+        state.value =
+            SetsViewModelState.Error(
+                message
+            )
     }
 
     private suspend fun setBackgroundImage(items: List<Card>){
@@ -241,7 +257,10 @@ class SetsViewModel (
             if(imageUrl.isNotEmpty()){
 
                 withContext(dispatchers.main()) {
-                    state.value = SetsViewModelState.BackgroundImage(imageUrl)
+                    state.value =
+                        SetsViewModelState.BackgroundImage(
+                            imageUrl
+                        )
                 }
 
             }
@@ -252,7 +271,8 @@ class SetsViewModel (
     }
 
     private suspend fun setCacheLoaded() = withContext(dispatchers.main()) {
-        state.value = SetsViewModelState.CacheLoaded
+        state.value =
+            SetsViewModelState.CacheLoaded
     }
 
 }

@@ -1,5 +1,6 @@
 package com.bootcamp.bootcampmagic.adapter
 
+import android.graphics.drawable.Drawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,9 +13,13 @@ import com.bootcamp.bootcampmagic.models.CardSet
 import com.bootcamp.bootcampmagic.models.CardType
 import com.bootcamp.bootcampmagic.models.ListItem
 import com.bumptech.glide.Glide
+import com.bumptech.glide.load.DataSource
 import com.bumptech.glide.load.engine.DiskCacheStrategy
+import com.bumptech.glide.load.engine.GlideException
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners
+import com.bumptech.glide.request.RequestListener
 import com.bumptech.glide.request.RequestOptions
+import com.bumptech.glide.request.target.Target
 import kotlinx.android.synthetic.main.adapter_cards.view.*
 import kotlinx.android.synthetic.main.sets_title.view.*
 import kotlinx.android.synthetic.main.types_title.view.*
@@ -104,13 +109,37 @@ class SetsAdapter(
                     if (item.imageUrl.isEmpty()){
                         Glide.with(itemView)
                             .load(R.drawable.no_card)
-                            .apply(RequestOptions().optionalTransform(RoundedCorners(16)))
+                            .apply(RequestOptions().transform(RoundedCorners(16)))
                             .into(view.img_card)
+                        view.progressBar.visibility = View.GONE
                     }else {
                         Glide.with(itemView.context)
                             .load(item.imageUrl)
+                            .listener(object : RequestListener<Drawable> {
+                                override fun onLoadFailed(
+                                    e: GlideException?,
+                                    model: Any?,
+                                    target: Target<Drawable>?,
+                                    isFirstResource: Boolean
+                                ): Boolean {
+                                    view.progressBar.visibility = View.GONE
+                                    return false
+                                }
+
+                                override fun onResourceReady(
+                                    resource: Drawable?,
+                                    model: Any?,
+                                    target: Target<Drawable>?,
+                                    dataSource: DataSource?,
+                                    isFirstResource: Boolean
+                                ): Boolean {
+                                    view.progressBar.visibility = View.GONE
+                                    return false
+                                }
+
+                            })
                             .diskCacheStrategy(DiskCacheStrategy.ALL)
-                            .apply(RequestOptions().optionalTransform(RoundedCorners(16)))
+                            .apply(RequestOptions().transform(RoundedCorners(16)))
                             .into(view.img_card)
                     }
 
