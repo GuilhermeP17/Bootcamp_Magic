@@ -2,6 +2,7 @@ package com.bootcamp.bootcampmagic.utils
 
 import androidx.lifecycle.MutableLiveData
 import com.bootcamp.bootcampmagic.models.ListItem
+import com.bootcamp.bootcampmagic.viewmodels.favorites.FavoritesViewModelState
 import com.bootcamp.bootcampmagic.viewmodels.sets.SetsViewModelState
 
 interface SharedViewModel{
@@ -12,4 +13,5 @@ interface SharedViewModel{
     fun setSelectedItem(value: Int)
     fun clearViewState()
     fun getSetsViewModelState(): MutableLiveData<SetsViewModelState>?
+    fun getFavoritesViewModelState(): MutableLiveData<FavoritesViewModelState>?
 }

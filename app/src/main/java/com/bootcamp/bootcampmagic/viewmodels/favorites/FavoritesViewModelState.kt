@@ -1,5 +1,7 @@
 package com.bootcamp.bootcampmagic.viewmodels.favorites
 
-sealed class FavoritesViewModelState(){
+import androidx.annotation.StringRes
 
+sealed class FavoritesViewModelState(){
+    data class Error(@StringRes val message: Int): FavoritesViewModelState()
 }

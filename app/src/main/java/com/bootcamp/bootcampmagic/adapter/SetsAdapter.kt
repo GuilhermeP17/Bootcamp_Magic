@@ -44,7 +44,9 @@ class SetsAdapter(
         }else{
             /*DiffUtil.calculateDiff(MyDiffCallback(items, itemList))
                 .dispatchUpdatesTo(this)*/
+            val totalItems = itemList.size
             itemList.clear()
+            notifyItemRangeRemoved(0, totalItems)
             itemList.addAll(items)
             notifyItemRangeChanged(0, items.size)
         }
@@ -107,14 +109,15 @@ class SetsAdapter(
 
                 is Card ->{
                     if (item.imageUrl.isEmpty()){
-                        Glide.with(itemView)
+                        /*Glide.with(itemView)
                             .load(R.drawable.no_card)
                             .apply(RequestOptions().transform(RoundedCorners(16)))
-                            .into(view.img_card)
+                            .into(view.img_card)*/
                         view.progressBar.visibility = View.GONE
                     }else {
                         Glide.with(itemView.context)
                             .load(item.imageUrl)
+                            .placeholder(R.drawable.no_card)
                             .listener(object : RequestListener<Drawable> {
                                 override fun onLoadFailed(
                                     e: GlideException?,
@@ -138,8 +141,7 @@ class SetsAdapter(
                                 }
 
                             })
-                            .diskCacheStrategy(DiskCacheStrategy.ALL)
-                            .apply(RequestOptions().transform(RoundedCorners(16)))
+                            .diskCacheStrategy(DiskCacheStrategy.ALL) //.apply(RequestOptions().transform(RoundedCorners(16)))
                             .into(view.img_card)
                     }
 

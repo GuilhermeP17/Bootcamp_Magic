@@ -9,13 +9,13 @@ import kotlinx.coroutines.withContext
 import java.net.HttpURLConnection
 
 class MtgRepository(
-    private val database: CardsDao,
+    private val cardsDatabase: CardsDao,
     private val dataSource: MtgDataSource,
     private val dispatcher: DispatcherProvider = DefaultDispatcherProvider()
 ) {
 
     suspend fun getCachedCards(): List<Card> = withContext(dispatcher.io()) {
-        database.getAll()
+        cardsDatabase.getCachedCards()
     }
 
     suspend fun getSets(): SetsResponse = withContext(dispatcher.io()) {
@@ -46,10 +46,17 @@ class MtgRepository(
                             if(card.types.isNotEmpty()){
                                 card.type = card.types[0]
                             }
+
+                            if(cardsDatabase.getFavoriteCard(card.id) != null){
+                                card.favorite = true
+                            }
+                            if(saveCache){
+                                card.isCache = true
+                            }
                         }
 
                         if(saveCache){
-                            database.updateData(body.cards)
+                            cardsDatabase.updateCache(body.cards)
                         }
                     }
                 }
@@ -72,10 +79,34 @@ class MtgRepository(
                             if(card.types.isNotEmpty()){
                                 card.type = card.types[0]
                             }
+
+                            if(cardsDatabase.getFavoriteCard(card.id) != null){
+                                card.favorite = true
+                            }
                         }
                     }
                 }
             }
         }
+    }
+
+
+
+    suspend fun getFavorites(): List<Card> = withContext(dispatcher.io()) {
+        cardsDatabase.getFavorites()
+    }
+
+    suspend fun searchFavorites(name: String): List<Card> = withContext(dispatcher.io()) {
+        cardsDatabase.searchFavorites(name)
+    }
+
+    suspend fun addFavorite(card: Card) = withContext(dispatcher.io()) {
+        card.favorite = true
+        cardsDatabase.addFavorite(card)
+    }
+
+    suspend fun removeFavorite(card: Card) = withContext(dispatcher.io()) {
+        card.favorite = false
+        cardsDatabase.removeFavorite(card.id)
     }
 }

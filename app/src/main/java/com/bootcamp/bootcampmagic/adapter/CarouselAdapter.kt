@@ -32,7 +32,9 @@ class CarouselAdapter: RecyclerView.Adapter<CarouselAdapter.ViewHolder>(){
             itemList.addAll(items)
             notifyItemRangeChanged(0, items.size)
         }else{
+            val totalItems = itemList.size
             itemList.clear()
+            notifyItemRangeRemoved(0, totalItems)
             itemList.addAll(items)
             notifyItemRangeChanged(0, items.size)
         }
@@ -60,14 +62,11 @@ class CarouselAdapter: RecyclerView.Adapter<CarouselAdapter.ViewHolder>(){
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder =
         when(viewType){
-            ListItem.CARD_TYPE ->
-                ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.empty_item, parent, false))
-
-            ListItem.SET ->
-                ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.empty_item, parent, false))
+            ListItem.CARD ->
+                ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.carousel_item, parent, false))
 
             else ->
-                ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.carousel_item, parent, false))
+                ViewHolder(LayoutInflater.from(parent.context).inflate(R.layout.empty_item, parent, false))
         }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
@@ -80,14 +79,15 @@ class CarouselAdapter: RecyclerView.Adapter<CarouselAdapter.ViewHolder>(){
 
                 is Card ->{
                     if (item.imageUrl.isEmpty()){
-                        Glide.with(itemView)
+                        /*Glide.with(itemView)
                             .load(R.drawable.no_card)
                             .apply(RequestOptions().optionalTransform(RoundedCorners(16)))
-                            .into(view.img_card)
+                            .into(view.img_card)*/
                         view.progressBar.visibility = View.GONE
                     }else {
                         Glide.with(itemView.context)
                             .load(item.imageUrl)
+                            .placeholder(R.drawable.no_card)
                             .listener(object : RequestListener<Drawable> {
                                 override fun onLoadFailed(
                                     e: GlideException?,
@@ -111,8 +111,7 @@ class CarouselAdapter: RecyclerView.Adapter<CarouselAdapter.ViewHolder>(){
                                 }
 
                             })
-                            .diskCacheStrategy(DiskCacheStrategy.ALL)
-                            .apply(RequestOptions().optionalTransform(RoundedCorners(16)))
+                            .diskCacheStrategy(DiskCacheStrategy.ALL) //.apply(RequestOptions().optionalTransform(RoundedCorners(16)))
                             .into(view.img_card)
                     }
                 }

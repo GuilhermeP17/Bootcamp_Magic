@@ -13,6 +13,8 @@ import com.bootcamp.bootcampmagic.adapter.CarouselAdapter
 import com.bootcamp.bootcampmagic.models.Card
 import com.bootcamp.bootcampmagic.models.ListType
 import com.bootcamp.bootcampmagic.utils.SharedViewModel
+import com.bootcamp.bootcampmagic.viewmodels.favorites.FavoritesViewModelFactory
+import com.bootcamp.bootcampmagic.viewmodels.favorites.FavoritesViewModelState
 import com.bootcamp.bootcampmagic.viewmodels.sets.SetsViewModelFactory
 import com.bootcamp.bootcampmagic.viewmodels.sets.SetsViewModelState
 import com.bootcamp.bootcampmagic.views.CarouselView
@@ -40,6 +42,10 @@ class OverviewFragment: Fragment() {
         when(args.listType){
             ListType.SETS.value -> {
                 viewModel = SetsViewModelFactory.getViewModelStance()
+            }
+
+            ListType.FAVORITES.value -> {
+                viewModel = FavoritesViewModelFactory.getViewModelStance()
             }
         }
 
@@ -89,6 +95,19 @@ class OverviewFragment: Fragment() {
                     is SetsViewModelState.AddData ->{
                         adapter.addItems(state.items)
                     }
+
+                }
+                it.clearViewState()
+            })
+
+            it.getFavoritesViewModelState()?.observe(viewLifecycleOwner, Observer { state ->
+                if(state == null) return@Observer
+                when(state){
+
+                    is FavoritesViewModelState.Error ->
+                        when(state.message){
+                            R.string.generic_network_error -> showNetworkError(state.message)
+                        }
 
                 }
                 it.clearViewState()

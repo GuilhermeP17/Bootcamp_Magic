@@ -13,7 +13,8 @@ data class Card (
     val set: String,
     val setName: String,
     var imageUrl: String = "",
-    var favorite: Boolean = false
+    var favorite: Boolean = false,
+    var isCache: Boolean = false
 ): ListItem{
     constructor(
         id: String,
@@ -22,7 +23,8 @@ data class Card (
         set: String,
         setName: String,
         imageUrl: String = "",
-        favorite: Boolean = false
+        favorite: Boolean = false,
+        isCache: Boolean = false
     ) : this(
         id,
         name,
@@ -31,8 +33,8 @@ data class Card (
         set,
         setName,
         imageUrl,
-        favorite)
+        favorite,
+        isCache)
 
     override fun getItemType(): Int = ListItem.CARD
-
 }

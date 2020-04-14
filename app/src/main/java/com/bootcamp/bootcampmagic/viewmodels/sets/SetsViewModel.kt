@@ -12,6 +12,7 @@ import com.bootcamp.bootcampmagic.repositories.MtgRepository
 import com.bootcamp.bootcampmagic.utils.DefaultDispatcherProvider
 import com.bootcamp.bootcampmagic.utils.DispatcherProvider
 import com.bootcamp.bootcampmagic.utils.SharedViewModel
+import com.bootcamp.bootcampmagic.viewmodels.favorites.FavoritesViewModelState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -40,6 +41,7 @@ class SetsViewModel (
     private var searchPage = 1
 
     override fun getSetsViewModelState() = state
+    override fun getFavoritesViewModelState(): MutableLiveData<FavoritesViewModelState>? = null
     override fun clearViewState(){state.value = null}
     override fun getData() = data
     override fun getSelectedItem() = selectedItem
@@ -73,7 +75,8 @@ class SetsViewModel (
         searchdata.value = mutableListOf()
         searchFilter = ""
         searchPage = 1
-        refreshData()
+        //refreshData()
+        data.value = data.value
     }
 
     fun refreshData(){
@@ -100,7 +103,16 @@ class SetsViewModel (
     }
 
     override fun setFavorite(position: Int, favorite: Boolean){
-        (data.value?.get(position) as Card).favorite = favorite
+        val card = (data.value?.get(position) as Card)
+        card.favorite = favorite
+
+        CoroutineScope(dispatchers.io()).launch {
+            if(favorite){
+                repository.addFavorite(card)
+            }else{
+                repository.removeFavorite(card)
+            }
+        }
     }
 
 
