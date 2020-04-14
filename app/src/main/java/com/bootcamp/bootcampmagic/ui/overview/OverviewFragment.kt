@@ -10,17 +10,19 @@ import androidx.navigation.Navigation
 import androidx.navigation.fragment.navArgs
 import com.bootcamp.bootcampmagic.R
 import com.bootcamp.bootcampmagic.adapter.CarouselAdapter
+import com.bootcamp.bootcampmagic.models.Card
 import com.bootcamp.bootcampmagic.models.ListType
-import com.bootcamp.bootcampmagic.viewmodels.sets.SetsViewModel
+import com.bootcamp.bootcampmagic.utils.SharedViewModel
 import com.bootcamp.bootcampmagic.viewmodels.sets.SetsViewModelFactory
 import com.bootcamp.bootcampmagic.viewmodels.sets.SetsViewModelState
+import com.bootcamp.bootcampmagic.views.CarouselView
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.fragment_overview.*
 
 class OverviewFragment: Fragment() {
 
     private val adapter = CarouselAdapter()
-    private var setsViewModel: SetsViewModel? = null
+    private var viewModel: SharedViewModel? = null
     private val args: OverviewFragmentArgs by navArgs()
 
 
@@ -32,57 +34,102 @@ class OverviewFragment: Fragment() {
         return inflater.inflate(R.layout.fragment_overview, container, false)
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
-        closeButton.setOnClickListener {
-            view?.let {
-                Navigation.findNavController(it).popBackStack()
+        when(args.listType){
+            ListType.SETS.value -> {
+                viewModel = SetsViewModelFactory.getViewModelStance()
             }
         }
 
-        carouselView.initialize(adapter)
-        when(args.listType){
-            ListType.SETS.value -> {
-                setsViewModel = SetsViewModelFactory.getViewModelStance()
-                setsViewModel?.let { viewModel ->
-                    setupSetsViewModel(viewModel)
 
-                }
+        setupCarousel()
+        setupViewModel()
+
+        btnFavorite.setOnClickListener{
+            setFavorite()
+        }
+        closeButton.setOnClickListener {
+            view.let {
+                Navigation.findNavController(it).popBackStack()
             }
-
         }
     }
 
 
-    private fun setupSetsViewModel(viewModel: SetsViewModel){
-        viewModel.getViewState().observe(viewLifecycleOwner, Observer { state ->
-            if(state == null) return@Observer
-            when(state){
+    private fun setupCarousel(){
 
-                is SetsViewModelState.Error ->
-                    when(state.message){
-                        R.string.generic_network_error -> showNetworkError(state.message)
+        carouselView.initialize(adapter)
+        carouselView.setOnItemSelectedListener(object: CarouselView.OnItemSelectedListener{
+            override fun onItemSelected(position: Int) {
+                setSelectedItem(position)
+                val card: Card = adapter.getItem(position) as Card
+                setButtonFavoriteState(card.favorite)
+            }
+        })
+
+    }
+
+
+    private fun setupViewModel(){
+        viewModel?.let {
+            carouselView.scrollToPosition(it.getSelectedItem())
+
+            it.getSetsViewModelState()?.observe(viewLifecycleOwner, Observer { state ->
+                if(state == null) return@Observer
+                when(state){
+
+                    is SetsViewModelState.Error ->
+                        when(state.message){
+                            R.string.generic_network_error -> showNetworkError(state.message)
+                        }
+
+
+                    is SetsViewModelState.AddData ->{
+                        adapter.addItems(state.items)
                     }
 
-
-                is SetsViewModelState.AddData ->{
-                    adapter.addItems(state.items)
                 }
-
-            }
-            viewModel.clearViewState()
-        })
+                it.clearViewState()
+            })
 
 
-        viewModel.getData().observe(viewLifecycleOwner, Observer { items ->
-            if(items.isNotEmpty()){
-                adapter.setItems(items)
-                viewModel.selectedItem.value?.let { position ->
-                    carouselView.scrollToPosition(position)
+            it.getData().observe(viewLifecycleOwner, Observer { items ->
+                if(items.isNotEmpty()){
+                    adapter.setItems(items)
+                }
+            })
+        }
+    }
+
+
+    private fun setSelectedItem(position: Int){
+        viewModel?.setSelectedItem(position)
+    }
+
+
+    private fun setFavorite(){
+        viewModel?.let {
+            val position = it.getSelectedItem()
+            when(adapter.getItem(position)){
+                is Card -> {
+                    val card: Card = adapter.getItem(position) as Card
+                    val favorite = (!card.favorite)
+
+                    it.setFavorite(position, favorite)
+                    adapter.setFavorite(position, favorite)
+                    setButtonFavoriteState(favorite)
                 }
             }
-        })
+        }
+    }
+    private fun setButtonFavoriteState(favorite: Boolean){
+        if(favorite){
+            btnFavorite.text = getString(R.string.remove_favorite)
+        }else{
+            btnFavorite.text = getString(R.string.add_favorite)
+        }
     }
 
 
@@ -90,11 +137,7 @@ class OverviewFragment: Fragment() {
         view?.let {
             Snackbar.make(it, errorMessage, Snackbar.LENGTH_LONG)
                 .setAction(R.string.try_again) {
-                    when(args.listType){
-
-                        ListType.SETS.value -> setsViewModel?.loadMore()
-
-                    }
+                    viewModel?.loadMore()
                 }
                 .show()
         }

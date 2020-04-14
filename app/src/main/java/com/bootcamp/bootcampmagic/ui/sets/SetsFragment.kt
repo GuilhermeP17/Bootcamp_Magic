@@ -56,7 +56,7 @@ class SetsFragment() : Fragment() {
 
 
     private fun setupObservables(){
-        viewModel.getViewState().observe(viewLifecycleOwner, Observer { state ->
+        viewModel.getSetsViewModelState().observe(viewLifecycleOwner, Observer { state ->
             if(state == null) return@Observer
             when(state){
 
@@ -87,6 +87,13 @@ class SetsFragment() : Fragment() {
         viewModel.getData().observe(viewLifecycleOwner, Observer { items ->
             if(items.isNotEmpty()){
                 adapter.setItems(items)
+                viewModel.getSelectedItem().let { selectedItem ->
+                    if(viewModel.getSelectedItem() >= 0){
+                        recycler_cards.scrollToPosition(selectedItem)
+                        viewModel.setSelectedItem(-1)
+                    }
+                }
+
             }
         })
 
@@ -94,13 +101,6 @@ class SetsFragment() : Fragment() {
         viewModel.getSearchData().observe(viewLifecycleOwner, Observer { items ->
             if(items.isNotEmpty()){
                 adapter.setItems(items)
-            }
-        })
-
-
-        viewModel.selectedItem.observe(viewLifecycleOwner, Observer { position ->
-            if(scrollListener.getFirstVisibleItemPosition() != position){
-                recycler_cards.scrollToPosition(position)
             }
         })
     }
@@ -140,7 +140,7 @@ class SetsFragment() : Fragment() {
         override fun onItemClicked(card: Card, position: Int) {
             view?.let {
 
-                viewModel.selectedItem.value = position
+                viewModel.setSelectedItem(position)
                 val action = TabbedFragmentDirections
                     .actionTabbedFragmentToOverviewFragment(ListType.SETS.value)
                 Navigation.findNavController(it).navigate(action)

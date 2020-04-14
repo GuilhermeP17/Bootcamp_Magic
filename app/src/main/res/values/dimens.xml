@@ -16,6 +16,8 @@
     <dimen name="grid_item_margin">14dp</dimen>
     <dimen name="card_item_size">148dp</dimen>
     <dimen name="tab_height">60dp</dimen>
-    <dimen name="btnfavorite_margin_bottom">60dp</dimen>
     <dimen name="tabs_height">60dp</dimen>
+    <dimen name="btn_favorite_margin_horizontal">20dp</dimen>
+    <dimen name="carousel_padding">100dp</dimen>
+    <dimen name="carousel_item_width">250dp</dimen>
 </resources>

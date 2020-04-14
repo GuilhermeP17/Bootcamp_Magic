@@ -43,16 +43,17 @@ class CarouselAdapter: RecyclerView.Adapter<CarouselAdapter.ViewHolder>(){
         notifyItemRangeChanged(totalItems, items.size)
     }
 
+    fun getItem(position: Int) = itemList[position]
+    fun setFavorite(position: Int, favorite: Boolean){
+        (itemList[position] as Card).favorite = favorite
+    }
+
     override fun getItemCount(): Int {
         return itemList.size
     }
 
     override fun getItemViewType(position: Int): Int {
         return itemList[position].getItemType()
-    }
-
-    fun isHeader(position: Int): Boolean {
-        return itemList[position].getItemType() != ListItem.CARD
     }
 
 

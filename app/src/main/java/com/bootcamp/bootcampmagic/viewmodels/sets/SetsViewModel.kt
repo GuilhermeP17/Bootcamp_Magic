@@ -11,6 +11,7 @@ import com.bootcamp.bootcampmagic.models.ListItem
 import com.bootcamp.bootcampmagic.repositories.MtgRepository
 import com.bootcamp.bootcampmagic.utils.DefaultDispatcherProvider
 import com.bootcamp.bootcampmagic.utils.DispatcherProvider
+import com.bootcamp.bootcampmagic.utils.SharedViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -20,11 +21,10 @@ import java.net.HttpURLConnection
 class SetsViewModel (
     private val repository: MtgRepository,
     private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
-): ViewModel() {
+): ViewModel(), SharedViewModel {
 
     private val state = MutableLiveData<SetsViewModelState>()
-    val selectedItem = MutableLiveData<Int>().apply {value = 0}
-
+    private var selectedItem: Int = -1
 
     private var sets: List<CardSet>? = null
     private var currentSetIndex = 0
@@ -39,9 +39,13 @@ class SetsViewModel (
     private var searchFilter: String = ""
     private var searchPage = 1
 
-    fun getViewState() = state
-    fun clearViewState(){state.value = null}
-    fun getData() = data
+    override fun getSetsViewModelState() = state
+    override fun clearViewState(){state.value = null}
+    override fun getData() = data
+    override fun getSelectedItem() = selectedItem
+    override fun setSelectedItem(value: Int) {
+        selectedItem = value
+    }
     fun getSearchData() = searchdata
     fun getSearchFilter() = searchFilter
 
@@ -86,12 +90,17 @@ class SetsViewModel (
         }
     }
 
-    fun loadMore(){
+
+    override fun loadMore(){
         if(searchFilter.isEmpty()){
             getCards()
         }else{
             searchCards()
         }
+    }
+
+    override fun setFavorite(position: Int, favorite: Boolean){
+        (data.value?.get(position) as Card).favorite = favorite
     }
 
 
