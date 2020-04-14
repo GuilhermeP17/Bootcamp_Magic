@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.bootcamp.bootcampmagic.R
 import com.bootcamp.bootcampmagic.adapter.PagerAdapter
+import com.bootcamp.bootcampmagic.ui.favorites.FavoritesFragment
 import com.bootcamp.bootcampmagic.ui.sets.SetsFragment
 import kotlinx.android.synthetic.main.fragment_tabs.*
 
@@ -34,7 +35,7 @@ class TabbedFragment: Fragment() {
         val pagerAdapter = PagerAdapter(childFragmentManager, ArrayList(), ArrayList())
 
         pagerAdapter.adicionarFragment(SetsFragment(), getString(R.string.titulo_tab_sets))
-        pagerAdapter.adicionarFragment(Fragment(), getString(R.string.titulo_tab_favoritos))
+        pagerAdapter.adicionarFragment(FavoritesFragment(), getString(R.string.titulo_tab_favoritos))
 
         return pagerAdapter
     }
