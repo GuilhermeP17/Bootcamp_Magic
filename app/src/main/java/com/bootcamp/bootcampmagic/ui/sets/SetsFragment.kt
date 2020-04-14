@@ -1,4 +1,4 @@
-package com.bootcamp.bootcampmagic.ui
+package com.bootcamp.bootcampmagic.ui.sets
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -7,17 +7,21 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
+import androidx.navigation.Navigation
 import androidx.recyclerview.widget.GridLayoutManager
 import com.bootcamp.bootcampmagic.R
 import com.bootcamp.bootcampmagic.adapter.EndlessScrollListener
 import com.bootcamp.bootcampmagic.adapter.GridSpacingItemDecoration
 import com.bootcamp.bootcampmagic.adapter.SetsAdapter
 import com.bootcamp.bootcampmagic.models.Card
+import com.bootcamp.bootcampmagic.models.ListType
 import com.bootcamp.bootcampmagic.repositories.MtgRepository
+import com.bootcamp.bootcampmagic.ui.main.ImmersiveActivity
+import com.bootcamp.bootcampmagic.ui.tabs.TabbedFragmentDirections
 import com.bootcamp.bootcampmagic.utils.App
-import com.bootcamp.bootcampmagic.viewmodels.SetsViewModel
-import com.bootcamp.bootcampmagic.viewmodels.SetsViewModelFactory
-import com.bootcamp.bootcampmagic.viewmodels.SetsViewModelState
+import com.bootcamp.bootcampmagic.viewmodels.sets.SetsViewModel
+import com.bootcamp.bootcampmagic.viewmodels.sets.SetsViewModelFactory
+import com.bootcamp.bootcampmagic.viewmodels.sets.SetsViewModelState
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.fragment_set.*
 
@@ -28,7 +32,9 @@ class SetsFragment() : Fragment() {
     private lateinit var scrollListener: EndlessScrollListener
     private val viewModel: SetsViewModel by viewModels{
         App().let {
-            SetsViewModelFactory(MtgRepository(it.getCardsDao(), it.getMtgDataSource()))
+            SetsViewModelFactory(
+                MtgRepository(it.getCardsDao(), it.getMtgDataSource())
+            )
         }
     }
 
@@ -41,8 +47,8 @@ class SetsFragment() : Fragment() {
         return inflater.inflate(R.layout.fragment_set, container, false)
     }
 
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
 
         setupObservables()
         setupRecyclerView()
@@ -50,7 +56,7 @@ class SetsFragment() : Fragment() {
 
 
     private fun setupObservables(){
-        viewModel.getViewState().observe(viewLifecycleOwner, Observer { state ->
+        viewModel.getSetsViewModelState().observe(viewLifecycleOwner, Observer { state ->
             if(state == null) return@Observer
             when(state){
 
@@ -81,6 +87,13 @@ class SetsFragment() : Fragment() {
         viewModel.getData().observe(viewLifecycleOwner, Observer { items ->
             if(items.isNotEmpty()){
                 adapter.setItems(items)
+                viewModel.getSelectedItem().let { selectedItem ->
+                    if(viewModel.getSelectedItem() >= 0){
+                        recycler_cards.scrollToPosition(selectedItem)
+                        viewModel.setSelectedItem(-1)
+                    }
+                }
+
             }
         })
 
@@ -125,14 +138,21 @@ class SetsFragment() : Fragment() {
 
     private val clickListener = object: SetsAdapter.OnItemClickListener{
         override fun onItemClicked(card: Card, position: Int) {
+            view?.let {
+
+                viewModel.setSelectedItem(position)
+                val action = TabbedFragmentDirections
+                    .actionTabbedFragmentToOverviewFragment(ListType.SETS.value)
+                Navigation.findNavController(it).navigate(action)
+
+            }
         }
     }
 
 
     private fun showNetworkError(errorMessage: Int){
-        activity?.findViewById<View>(R.id.tab_set_favorites)?.let {
+        view?.let {
             Snackbar.make(it, errorMessage, Snackbar.LENGTH_LONG)
-                .setAnchorView(it)
                 .setAction(R.string.try_again) {
                     viewModel.loadMore()
                 }

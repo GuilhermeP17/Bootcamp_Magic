@@ -1,4 +1,4 @@
-package com.bootcamp.bootcampmagic.ui
+package com.bootcamp.bootcampmagic.ui.tabs
 
 import androidx.viewpager.widget.PagerAdapter
 import androidx.viewpager.widget.ViewPager

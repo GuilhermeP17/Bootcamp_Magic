@@ -1,21 +1,17 @@
 package com.bootcamp.bootcampmagic.viewmodels
 
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.bootcamp.bootcampmagic.R
-import com.bootcamp.bootcampmagic.models.CardsResponse
 import com.bootcamp.bootcampmagic.repositories.MtgRepository
 import com.bootcamp.bootcampmagic.utils.CoroutinesTestRule
 import com.bootcamp.bootcampmagic.utils.ListUtils
+import com.bootcamp.bootcampmagic.viewmodels.sets.SetsViewModel
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
-import org.junit.After
-import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
-import java.net.HttpURLConnection
 
 class SetsViewModelTest {
 
@@ -38,7 +34,10 @@ class SetsViewModelTest {
         } returns ListUtils.createCardsList(10)
 
         coroutinesTestRule.testDispatcher.runBlockingTest{
-            viewModel = SetsViewModel(repository, coroutinesTestRule.testDispatcherProvider)
+            viewModel = SetsViewModel(
+                repository,
+                coroutinesTestRule.testDispatcherProvider
+            )
         }
     }
 
