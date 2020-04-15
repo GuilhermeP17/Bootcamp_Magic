@@ -3,9 +3,7 @@ package com.bootcamp.bootcampmagic.utils
 import android.app.Application
 import androidx.room.Room
 import com.bootcamp.bootcampmagic.BuildConfig
-import com.bootcamp.bootcampmagic.repositories.CardsDao
-import com.bootcamp.bootcampmagic.repositories.CardsDatabase
-import com.bootcamp.bootcampmagic.repositories.MtgDataSource
+import com.bootcamp.bootcampmagic.repositories.*
 
 class App: Application() {
     companion object{

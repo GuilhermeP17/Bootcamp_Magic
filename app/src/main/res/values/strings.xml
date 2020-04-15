@@ -6,4 +6,8 @@
     <string name="try_again">Tentar novamente</string>
     <string name="titulo_tab_sets">Sets</string>
     <string name="titulo_tab_favoritos">Favoritos</string>
+    <string name="add_favorite">ADD CARD TO DECK</string>
+    <string name="remove_favorite">REMOVE CARD FROM DECK</string>
+    <string name="close_button">Close button</string>
+    <string name="no_content">Nada para exibir aqui\n\n=(</string>
 </resources>

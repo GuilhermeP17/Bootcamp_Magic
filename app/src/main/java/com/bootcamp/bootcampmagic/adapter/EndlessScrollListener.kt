@@ -24,13 +24,7 @@ abstract class EndlessScrollListener(
 
 
                 //Check if reached the first item
-                val firstItem = when(layoutManager){
-                    is LinearLayoutManager ->
-                        layoutManager.findFirstCompletelyVisibleItemPosition()
-                    is GridLayoutManager ->
-                        layoutManager.findFirstCompletelyVisibleItemPosition()
-                    else -> 0
-                }
+                val firstItem = getFirstVisibleItemPosition()
 
                 if(firstItem == 0){
                     if(currentPosition != Position.START){
@@ -76,6 +70,19 @@ abstract class EndlessScrollListener(
 
     fun resume(){
         currentPosition = Position.SCROLLING
+    }
+
+    fun getFirstVisibleItemPosition(): Int{
+        var position = when(layoutManager){
+            is LinearLayoutManager ->
+                layoutManager.findFirstCompletelyVisibleItemPosition()
+            is GridLayoutManager ->
+                layoutManager.findFirstCompletelyVisibleItemPosition()
+            else -> 0
+        }
+        if(position < 0) position = 0
+
+        return position
     }
 
 

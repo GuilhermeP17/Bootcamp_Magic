@@ -1,16 +1,15 @@
-package com.bootcamp.bootcampmagic.viewmodels
+package com.bootcamp.bootcampmagic.viewmodels.sets
 
 import androidx.annotation.StringRes
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.bootcamp.bootcampmagic.R
-import com.bootcamp.bootcampmagic.models.Card
-import com.bootcamp.bootcampmagic.models.CardSet
-import com.bootcamp.bootcampmagic.models.CardType
-import com.bootcamp.bootcampmagic.models.ListItem
+import com.bootcamp.bootcampmagic.models.*
 import com.bootcamp.bootcampmagic.repositories.MtgRepository
 import com.bootcamp.bootcampmagic.utils.DefaultDispatcherProvider
 import com.bootcamp.bootcampmagic.utils.DispatcherProvider
+import com.bootcamp.bootcampmagic.utils.SharedViewModel
+import com.bootcamp.bootcampmagic.viewmodels.favorites.FavoritesViewModelState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -20,32 +19,38 @@ import java.net.HttpURLConnection
 class SetsViewModel (
     private val repository: MtgRepository,
     private val dispatchers: DispatcherProvider = DefaultDispatcherProvider()
-): ViewModel() {
+): ViewModel(), SharedViewModel {
 
     private val state = MutableLiveData<SetsViewModelState>()
     private var sets: List<CardSet>? = null
+    private val mainData: MutableList<ListItem> = mutableListOf()
+    private val searchData: MutableList<ListItem> = mutableListOf()
+
+    private val data = MutableLiveData<MutableList<ListItem>>().apply {value = mutableListOf()}
     private var currentSetIndex = 0
     private var currentSet = ""
     private var currentType = ""
-    private var isRefresh = true
-
-    private val data = MutableLiveData<MutableList<ListItem>>().apply {value = mutableListOf()}
     private var page = 1
-
-    private val searchdata = MutableLiveData<MutableList<ListItem>>().apply {value = mutableListOf()}
-    private var searchFilter: String = ""
     private var searchPage = 1
+    private var selectedItem: Int = -1
+    private var searchFilter: String = ""
 
-    fun getViewState() = state
-    fun clearViewState(){state.value = null}
-    fun getData() = data
-    fun getSearchData() = searchdata
-    fun getSearchFilter() = searchFilter
-
+    override fun getSetsViewModelState() = state
+    override fun getFavoritesViewModelState(): MutableLiveData<FavoritesViewModelState>? = null
+    override fun clearViewState(){state.value = null}
+    override fun getData() = data
+    override fun getSelectedItem() = selectedItem
+    override fun setSelectedItem(value: Int) {
+        selectedItem = value
+    }
 
 
     init {
-        loadCachedCards()
+        data.value?.let {
+            if(it.size <= 0){
+                loadCachedCards()
+            }
+        }
     }
 
     fun search(filter: String){
@@ -54,51 +59,71 @@ class SetsViewModel (
             searchPage = 1
             searchCards()
         }else{
-            clearSearch()
+            if(searchFilter.isNotEmpty()){
+                searchData.clear()
+                searchFilter = ""
+                searchPage = 1
+                CoroutineScope(dispatchers.main()).launch {
+                    data.value = mainData
+                    setLoadingType(LoadingType.LOADED)
+                }
+            }
         }
     }
 
-    fun clearSearch(){
-        searchdata.value = mutableListOf()
-        searchFilter = ""
-        searchPage = 1
-        refreshData()
-    }
-
     fun refreshData(){
-        isRefresh = true
         if(searchFilter.isEmpty()){
             page = 1
             currentSetIndex = 0
             currentSet = ""
             currentType = ""
+            mainData.clear()
             getCards()
         }else{
             searchPage = 1
+            searchData.clear()
             searchCards()
         }
     }
 
-    fun loadMore(){
+
+    override fun loadMore(){
         if(searchFilter.isEmpty()){
             getCards()
         }else{
             searchCards()
+        }
+    }
+
+    override fun setFavorite(position: Int, favorite: Boolean){
+        val card = (data.value?.get(position) as Card)
+        card.favorite = favorite
+
+        CoroutineScope(dispatchers.io()).launch {
+            if(favorite){
+                repository.addFavorite(card)
+            }else{
+                repository.removeFavorite(card)
+            }
         }
     }
 
 
 
     private fun loadCachedCards() = CoroutineScope(dispatchers.io()).launch {
+        /*setLoadingType(LoadingType.LOADING)
         try {
             repository.getCachedCards().let { list ->
                 if(list.isNotEmpty()){
                     setData(groupItems(list))
+                    setLoadingType(LoadingType.LOADED)
                 }
             }
         } catch (e: Exception) {
         }
-        setCacheLoaded()
+        currentSet = ""
+        currentType = ""*/
+        getCards()
     }
 
 
@@ -120,12 +145,28 @@ class SetsViewModel (
 
 
     private fun getCards() = CoroutineScope(dispatchers.io()).launch {
+        var isLoading = true
+        data.value?.let {
+            if(it.isNotEmpty()){
+                isLoading = false
+            }
+        }
+        if(isLoading){
+            setLoadingType(LoadingType.LOADING)
+        }
         try {
             if(sets.isNullOrEmpty()){
                 getSets()
             }
             sets?.get(currentSetIndex)?.let { set ->
-                repository.getCards(page, set.code, isRefresh).let { response ->
+                var saveCache = false
+                if(page <= 1){
+                    if(currentSetIndex <= 0){
+                        saveCache = true
+                    }
+                }
+
+                repository.getCards(page, set.code, saveCache).let { response ->
                     when(response.code){
 
                         HttpURLConnection.HTTP_OK ->{
@@ -134,13 +175,16 @@ class SetsViewModel (
                                 return@launch
                             }
                             response.cards.let { list ->
-                                if(isRefresh){
+
+                                val groupedItems = groupItems(list)
+                                if(mainData.isEmpty()){
+                                    mainData.addAll(groupedItems)
+                                    setData(mainData)
                                     setBackgroundImage(list)
-                                    setData(groupItems(list))
                                 }else{
-                                    addData(groupItems(list))
+                                    mainData.addAll(groupedItems)
+                                    addData(groupedItems)
                                 }
-                                isRefresh = false
                                 page++
                             }
                         }
@@ -152,22 +196,29 @@ class SetsViewModel (
         } catch (e: Exception) {
             setError(R.string.generic_network_error)
         }
+        if(mainData.isEmpty()){
+            setLoadingType(LoadingType.NO_CONTENT)
+        }else{
+            setLoadingType(LoadingType.LOADED)
+        }
     }
 
 
     private fun searchCards() = CoroutineScope(dispatchers.io()).launch {
+        setLoadingType(LoadingType.LOADING)
         try {
             repository.searchCards(searchPage, searchFilter).let { response ->
                 when(response.code){
 
                     HttpURLConnection.HTTP_OK ->{
                         response.cards.let { list->
-                            if(isRefresh){
-                                setSearchData(list)
+                            if(searchData.isEmpty()){
+                                searchData.addAll(list)
+                                setData(searchData)
                             }else{
-                                addSearchData(list)
+                                searchData.addAll(list)
+                                addData(list)
                             }
-                            isRefresh = false
                             searchPage++
                         }
                     }
@@ -177,6 +228,11 @@ class SetsViewModel (
             }
         } catch (e: Exception) {
             setError(R.string.generic_network_error)
+        }
+        if(searchData.isEmpty()){
+            setLoadingType(LoadingType.NO_CONTENT)
+        }else{
+            setLoadingType(LoadingType.LOADED)
         }
     }
 
@@ -215,22 +271,22 @@ class SetsViewModel (
         data.value = items.toMutableList()
     }
 
-    private suspend fun setSearchData(items: List<ListItem>) = withContext(dispatchers.main()) {
-        searchdata.value = items.toMutableList()
-    }
-
     private suspend fun addData(items: List<ListItem>) = withContext(dispatchers.main()) {
-        data.value?.addAll(items)
-        state.value = SetsViewModelState.AddData(items)
-    }
-
-    private suspend fun addSearchData(items: List<ListItem>) = withContext(dispatchers.main()) {
-        searchdata.value?.addAll(items)
-        state.value = SetsViewModelState.AddData(items)
+        state.value =SetsViewModelState.AddData(items)
     }
 
     private suspend fun setError(@StringRes message: Int) = withContext(dispatchers.main()) {
-        state.value = SetsViewModelState.Error(message)
+        state.value =
+            SetsViewModelState.Error(
+                message
+            )
+    }
+
+    private suspend fun setLoadingType(type: LoadingType) = withContext(dispatchers.main()) {
+        state.value =
+            SetsViewModelState.LoadingState(
+                type
+            )
     }
 
     private suspend fun setBackgroundImage(items: List<Card>){
@@ -241,7 +297,10 @@ class SetsViewModel (
             if(imageUrl.isNotEmpty()){
 
                 withContext(dispatchers.main()) {
-                    state.value = SetsViewModelState.BackgroundImage(imageUrl)
+                    state.value =
+                        SetsViewModelState.BackgroundImage(
+                            imageUrl
+                        )
                 }
 
             }
@@ -249,10 +308,6 @@ class SetsViewModel (
                 break
             }
         }while (imageUrl.isEmpty())
-    }
-
-    private suspend fun setCacheLoaded() = withContext(dispatchers.main()) {
-        state.value = SetsViewModelState.CacheLoaded
     }
 
 }
