@@ -32,7 +32,6 @@ class SetsAdapter(
     private var itemList: MutableList<ListItem> = mutableListOf()
 
 
-
     fun setItems(items: List<ListItem>){
         if (items.isEmpty()){
             val totalItems = itemList.size
@@ -57,11 +56,6 @@ class SetsAdapter(
         val totalItems = itemList.size
         itemList.addAll(items)
         notifyItemRangeChanged(totalItems, items.size)
-    }
-
-    fun refreshAfterSearch(){
-        itemList.clear()
-        notifyDataSetChanged()
     }
 
     interface OnItemClickListener{

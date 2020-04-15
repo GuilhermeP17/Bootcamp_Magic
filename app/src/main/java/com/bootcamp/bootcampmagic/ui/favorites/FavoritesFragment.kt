@@ -1,8 +1,6 @@
 package com.bootcamp.bootcampmagic.ui.favorites
 
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,9 +15,11 @@ import com.bootcamp.bootcampmagic.adapter.GridSpacingItemDecoration
 import com.bootcamp.bootcampmagic.adapter.SetsAdapter
 import com.bootcamp.bootcampmagic.models.Card
 import com.bootcamp.bootcampmagic.models.ListType
+import com.bootcamp.bootcampmagic.models.LoadingType
 import com.bootcamp.bootcampmagic.repositories.MtgRepository
 import com.bootcamp.bootcampmagic.ui.tabs.TabbedFragmentDirections
 import com.bootcamp.bootcampmagic.utils.App
+import com.bootcamp.bootcampmagic.utils.SearchListener
 import com.bootcamp.bootcampmagic.viewmodels.favorites.FavoritesViewModel
 import com.bootcamp.bootcampmagic.viewmodels.favorites.FavoritesViewModelFactory
 import com.bootcamp.bootcampmagic.viewmodels.favorites.FavoritesViewModelState
@@ -52,30 +52,10 @@ class FavoritesFragment : Fragment(){
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        loadingContent.visibility = View.GONE
-
-        search_cards.addTextChangedListener(object : TextWatcher {
-            override fun afterTextChanged(s: Editable?) {}
-
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                if (search_cards.hasFocus()){
-                    recycler_cards.visibility = View.GONE
-                    loadingContent.visibility = View.VISIBLE
-                    viewModel.search(s.toString())
-                }
-            }
-        })
-
-        btn_cancelar.setOnClickListener {
-            search_cards.clearFocus()
-            search_cards.setText("")
-            viewModel.clearSearch()
-        }
-
         setupObservables()
         setupRecyclerView()
+        setupSearch()
+        viewModel.refreshData()
     }
 
 
@@ -89,39 +69,41 @@ class FavoritesFragment : Fragment(){
                         R.string.generic_network_error -> showNetworkError(state.message)
                     }
 
+                is FavoritesViewModelState.LoadingState ->
+                    when(state.type){
+                        LoadingType.LOADING ->{
+                            recycler_cards.visibility = View.GONE
+                            loadingContent.visibility = View.VISIBLE
+                            noContent.visibility = View.GONE
+                        }
+
+                        LoadingType.LOADED ->{
+                            recycler_cards.visibility = View.VISIBLE
+                            loadingContent.visibility = View.GONE
+                            noContent.visibility = View.GONE
+                        }
+
+                        LoadingType.NO_CONTENT ->{
+                            recycler_cards.visibility = View.GONE
+                            loadingContent.visibility = View.GONE
+                            noContent.visibility = View.VISIBLE
+                        }
+                    }
             }
             viewModel.clearViewState()
         })
 
 
         viewModel.getData().observe(viewLifecycleOwner, Observer { items ->
-            loadingContent.visibility = View.GONE
-            recycler_cards.visibility = View.VISIBLE
-            if(items.isNotEmpty()){
+            if (items.isNotEmpty()) {
                 adapter.setItems(items)
                 viewModel.getSelectedItem().let { selectedItem ->
-                    if(viewModel.getSelectedItem() >= 0){
-                        try {
-                            recycler_cards.scrollToPosition(selectedItem)
-                        } catch (e: Exception) {
-                        }
+                    if (viewModel.getSelectedItem() >= 0) {
+                        recycler_cards.scrollToPosition(selectedItem)
+                        viewModel.setSelectedItem(-1)
                     }
                 }
-            }
-        })
-        viewModel.refreshData()
 
-
-        viewModel.getSearchData().observe(viewLifecycleOwner, Observer { items ->
-            loadingContent.visibility = View.GONE
-            recycler_cards.visibility = View.VISIBLE
-            if(items.isNotEmpty()){
-                if (viewModel.getSearchFilter().isNotEmpty()){
-                    adapter.refreshAfterSearch()
-                    adapter.addItems(items)
-                }else{
-                    adapter.setItems(items)
-                }
             }
         })
     }
@@ -170,6 +152,22 @@ class FavoritesFragment : Fragment(){
         }
     }
 
+
+    private fun setupSearch(){
+        search_cards.addTextChangedListener(object : SearchListener() {
+            override fun onSearchChanged(filter: String) {
+                if (search_cards.hasFocus()){
+                    viewModel.search(filter)
+                }
+            }
+        })
+
+        btn_cancelar.setOnClickListener {
+            search_cards.clearFocus()
+            search_cards.setText("")
+            viewModel.search("")
+        }
+    }
 
     private fun showNetworkError(errorMessage: Int){
         view?.let {

@@ -4,10 +4,7 @@ import androidx.annotation.StringRes
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.bootcamp.bootcampmagic.R
-import com.bootcamp.bootcampmagic.models.Card
-import com.bootcamp.bootcampmagic.models.CardSet
-import com.bootcamp.bootcampmagic.models.CardType
-import com.bootcamp.bootcampmagic.models.ListItem
+import com.bootcamp.bootcampmagic.models.*
 import com.bootcamp.bootcampmagic.repositories.MtgRepository
 import com.bootcamp.bootcampmagic.utils.DefaultDispatcherProvider
 import com.bootcamp.bootcampmagic.utils.DispatcherProvider
@@ -23,12 +20,13 @@ class FavoritesViewModel(
 ): ViewModel(), SharedViewModel {
 
     private val state = MutableLiveData<FavoritesViewModelState>()
-    private var selectedItem: Int = -1
-    private var currentSet = ""
-    private var currentType = ""
+    private val mainData: MutableList<ListItem> = mutableListOf()
+    private val searchData: MutableList<ListItem> = mutableListOf()
 
     private val data = MutableLiveData<MutableList<ListItem>>().apply {value = mutableListOf()}
-    private val searchdata = MutableLiveData<MutableList<ListItem>>().apply {value = mutableListOf()}
+    private var currentSet = ""
+    private var currentType = ""
+    private var selectedItem: Int = -1
     private var searchFilter: String = ""
 
     override fun getSetsViewModelState() : MutableLiveData<SetsViewModelState>? = null
@@ -39,9 +37,6 @@ class FavoritesViewModel(
     override fun setSelectedItem(value: Int) {
         selectedItem = value
     }
-    fun getSearchData() = searchdata
-    fun getSearchFilter() = searchFilter
-
 
 
     fun search(filter: String){
@@ -49,17 +44,15 @@ class FavoritesViewModel(
             searchFilter = filter
             searchFavorites()
         }else{
-            clearSearch()
+            if(searchFilter.isNotEmpty()){
+                searchData.clear()
+                searchFilter = ""
+            }
+            CoroutineScope(dispatchers.main()).launch {
+                data.value = mainData
+                setLoadingType(LoadingType.LOADED)
+            }
         }
-    }
-
-    fun clearSearch(){
-        searchdata.value = mutableListOf()
-        searchFilter = ""
-
-        refreshData()
-
-        data.value = data.value
     }
 
     fun refreshData(){
@@ -68,7 +61,8 @@ class FavoritesViewModel(
             currentType = ""
             getFavorites()
         }else{
-            clearSearch()
+            searchData.clear()
+            searchFavorites()
         }
     }
 
@@ -89,19 +83,39 @@ class FavoritesViewModel(
 
 
     private fun getFavorites() = CoroutineScope(dispatchers.io()).launch {
+        setLoadingType(LoadingType.LOADING)
         try {
-            setData(groupItems(repository.getFavorites()))
+            repository.getFavorites().let { list ->
+                mainData.clear()
+                mainData.addAll(groupItems(list))
+                setData(mainData)
+            }
         } catch (e: Exception) {
             setError(R.string.generic_network_error)
+        }
+        if(mainData.isEmpty()){
+            setLoadingType(LoadingType.NO_CONTENT)
+        }else{
+            setLoadingType(LoadingType.LOADED)
         }
     }
 
 
     private fun searchFavorites() = CoroutineScope(dispatchers.io()).launch {
+        setLoadingType(LoadingType.LOADING)
         try {
-            setSearchData(groupItems(repository.searchFavorites(searchFilter)))
+            repository.searchFavorites(searchFilter).let {  list ->
+                searchData.clear()
+                searchData.addAll(groupItems(list))
+                setData(searchData)
+            }
         } catch (e: Exception) {
             setError(R.string.generic_network_error)
+        }
+        if(searchData.isEmpty()){
+            setLoadingType(LoadingType.NO_CONTENT)
+        }else{
+            setLoadingType(LoadingType.LOADED)
         }
     }
 
@@ -128,14 +142,17 @@ class FavoritesViewModel(
         data.value = items.toMutableList()
     }
 
-    private suspend fun setSearchData(items: List<ListItem>) = withContext(dispatchers.main()) {
-        searchdata.value = items.toMutableList()
-    }
-
     private suspend fun setError(@StringRes message: Int) = withContext(dispatchers.main()) {
         state.value =
             FavoritesViewModelState.Error(
                 message
+            )
+    }
+
+    private suspend fun setLoadingType(type: LoadingType) = withContext(dispatchers.main()) {
+        state.value =
+            FavoritesViewModelState.LoadingState(
+                type
             )
     }
 

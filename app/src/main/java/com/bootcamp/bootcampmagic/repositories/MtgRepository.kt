@@ -97,7 +97,7 @@ class MtgRepository(
     }
 
     suspend fun searchFavorites(name: String): List<Card> = withContext(dispatcher.io()) {
-        cardsDatabase.searchFavorites(name)
+        cardsDatabase.searchFavorites("$name%")
     }
 
     suspend fun addFavorite(card: Card) = withContext(dispatcher.io()) {

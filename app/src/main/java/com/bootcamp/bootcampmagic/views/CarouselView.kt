@@ -17,6 +17,7 @@ class CarouselView(
 ) : RecyclerView(context, attrs) {
 
     private val screenWidth: Int = Resources.getSystem().displayMetrics.widthPixels
+    private var selectedPosition: Int = -1
 
     fun setOnItemSelectedListener(listener: OnItemSelectedListener){
         selectListener = listener
@@ -44,7 +45,10 @@ class CarouselView(
                         if(isSelectedView(view)){
                             selectListener?.let { listener ->
                                 val listPosition = (layoutManager as LinearLayoutManager).getPosition(view)
-                                listener.onItemSelected(listPosition)
+                                if(selectedPosition != listPosition){
+                                    listener.onItemSelected(listPosition)
+                                    selectedPosition = listPosition
+                                }
                             }
                         }
 

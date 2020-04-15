@@ -52,7 +52,6 @@ class OverviewFragment: Fragment() {
 
         setupCarousel()
         setupViewModel()
-
         btnFavorite.setOnClickListener{
             setFavorite()
         }
@@ -69,7 +68,7 @@ class OverviewFragment: Fragment() {
         carouselView.initialize(adapter)
         carouselView.setOnItemSelectedListener(object: CarouselView.OnItemSelectedListener{
             override fun onItemSelected(position: Int) {
-                setSelectedItem(position)
+                viewModel?.setSelectedItem(position)
                 val card: Card = adapter.getItem(position) as Card
                 setButtonFavoriteState(card.favorite)
             }
@@ -80,8 +79,6 @@ class OverviewFragment: Fragment() {
 
     private fun setupViewModel(){
         viewModel?.let {
-            carouselView.scrollToPosition(it.getSelectedItem())
-
             it.getSetsViewModelState()?.observe(viewLifecycleOwner, Observer { state ->
                 if(state == null) return@Observer
                 when(state){
@@ -117,16 +114,11 @@ class OverviewFragment: Fragment() {
             it.getData().observe(viewLifecycleOwner, Observer { items ->
                 if(items.isNotEmpty()){
                     adapter.setItems(items)
+                    carouselView.scrollToPosition(it.getSelectedItem())
                 }
             })
         }
     }
-
-
-    private fun setSelectedItem(position: Int){
-        viewModel?.setSelectedItem(position)
-    }
-
 
     private fun setFavorite(){
         viewModel?.let {
@@ -143,6 +135,7 @@ class OverviewFragment: Fragment() {
             }
         }
     }
+
     private fun setButtonFavoriteState(favorite: Boolean){
         if(favorite){
             btnFavorite.text = getString(R.string.remove_favorite)
@@ -150,7 +143,6 @@ class OverviewFragment: Fragment() {
             btnFavorite.text = getString(R.string.add_favorite)
         }
     }
-
 
     private fun showNetworkError(errorMessage: Int){
         view?.let {
@@ -161,4 +153,5 @@ class OverviewFragment: Fragment() {
                 .show()
         }
     }
+
 }
