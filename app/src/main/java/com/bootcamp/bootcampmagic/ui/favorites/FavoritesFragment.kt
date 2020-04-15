@@ -1,6 +1,8 @@
 package com.bootcamp.bootcampmagic.ui.favorites
 
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -22,7 +24,9 @@ import com.bootcamp.bootcampmagic.viewmodels.favorites.FavoritesViewModel
 import com.bootcamp.bootcampmagic.viewmodels.favorites.FavoritesViewModelFactory
 import com.bootcamp.bootcampmagic.viewmodels.favorites.FavoritesViewModelState
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.android.synthetic.main.collapsing_toolbar.*
 import kotlinx.android.synthetic.main.fragment_favorites.*
+
 
 class FavoritesFragment : Fragment(){
 
@@ -48,6 +52,28 @@ class FavoritesFragment : Fragment(){
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        loadingContent.visibility = View.GONE
+
+        search_cards.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {}
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                if (search_cards.hasFocus()){
+                    recycler_cards.visibility = View.GONE
+                    loadingContent.visibility = View.VISIBLE
+                    viewModel.search(s.toString())
+                }
+            }
+        })
+
+        btn_cancelar.setOnClickListener {
+            search_cards.clearFocus()
+            search_cards.setText("")
+            viewModel.clearSearch()
+        }
+
         setupObservables()
         setupRecyclerView()
     }
@@ -69,6 +95,8 @@ class FavoritesFragment : Fragment(){
 
 
         viewModel.getData().observe(viewLifecycleOwner, Observer { items ->
+            loadingContent.visibility = View.GONE
+            recycler_cards.visibility = View.VISIBLE
             if(items.isNotEmpty()){
                 adapter.setItems(items)
                 viewModel.getSelectedItem().let { selectedItem ->
@@ -85,8 +113,15 @@ class FavoritesFragment : Fragment(){
 
 
         viewModel.getSearchData().observe(viewLifecycleOwner, Observer { items ->
+            loadingContent.visibility = View.GONE
+            recycler_cards.visibility = View.VISIBLE
             if(items.isNotEmpty()){
-                adapter.setItems(items)
+                if (viewModel.getSearchFilter().isNotEmpty()){
+                    adapter.refreshAfterSearch()
+                    adapter.addItems(items)
+                }else{
+                    adapter.setItems(items)
+                }
             }
         })
     }

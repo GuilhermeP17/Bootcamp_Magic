@@ -75,7 +75,9 @@ class SetsViewModel (
         searchdata.value = mutableListOf()
         searchFilter = ""
         searchPage = 1
-        //refreshData()
+
+        refreshData()
+
         data.value = data.value
     }
 

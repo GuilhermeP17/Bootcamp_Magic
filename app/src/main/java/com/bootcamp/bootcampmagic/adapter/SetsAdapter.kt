@@ -59,6 +59,11 @@ class SetsAdapter(
         notifyItemRangeChanged(totalItems, items.size)
     }
 
+    fun refreshAfterSearch(){
+        itemList.clear()
+        notifyDataSetChanged()
+    }
+
     interface OnItemClickListener{
         fun onItemClicked(card: Card, position: Int)
     }

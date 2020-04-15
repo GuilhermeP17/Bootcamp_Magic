@@ -56,7 +56,9 @@ class FavoritesViewModel(
     fun clearSearch(){
         searchdata.value = mutableListOf()
         searchFilter = ""
-        //refreshData()
+
+        refreshData()
+
         data.value = data.value
     }
 

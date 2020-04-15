@@ -1,6 +1,8 @@
 package com.bootcamp.bootcampmagic.ui.sets
 
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -23,6 +25,7 @@ import com.bootcamp.bootcampmagic.viewmodels.sets.SetsViewModel
 import com.bootcamp.bootcampmagic.viewmodels.sets.SetsViewModelFactory
 import com.bootcamp.bootcampmagic.viewmodels.sets.SetsViewModelState
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.android.synthetic.main.collapsing_toolbar.*
 import kotlinx.android.synthetic.main.fragment_set.*
 
 class SetsFragment() : Fragment() {
@@ -30,7 +33,7 @@ class SetsFragment() : Fragment() {
 
     private lateinit var adapter: SetsAdapter
     private lateinit var scrollListener: EndlessScrollListener
-    private val viewModel: SetsViewModel by viewModels{
+    private val viewModel: SetsViewModel by viewModels {
         App().let {
             SetsViewModelFactory(
                 MtgRepository(it.getCardsDao(), it.getMtgDataSource())
@@ -50,18 +53,42 @@ class SetsFragment() : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        search_cards.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {}
+
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                if (search_cards.hasFocus()){
+                    recycler_cards.visibility = View.GONE
+                    loadingContent.visibility = View.VISIBLE
+                    viewModel.search(s.toString())
+                }
+            }
+        })
+
+        btn_cancelar.setOnClickListener {
+            search_cards.clearFocus()
+            search_cards.setText("")
+            viewModel.clearSearch()
+        }
+
         setupObservables()
         setupRecyclerView()
     }
 
 
-    private fun setupObservables(){
+    private fun setupObservables() {
         viewModel.getSetsViewModelState().observe(viewLifecycleOwner, Observer { state ->
-            if(state == null) return@Observer
-            when(state){
+            if (state == null) return@Observer
+
+            recycler_cards.visibility = View.VISIBLE
+            loadingContent.visibility = View.GONE
+
+            when (state) {
 
                 is SetsViewModelState.Error ->
-                    when(state.message){
+                    when (state.message) {
                         R.string.generic_network_error -> showNetworkError(state.message)
                     }
 
@@ -74,9 +101,15 @@ class SetsFragment() : Fragment() {
                     viewModel.refreshData()
 
 
-                is SetsViewModelState.AddData ->{
-                    adapter.addItems(state.items)
-                    scrollListener.resume()
+                is SetsViewModelState.AddData -> {
+
+                    if (viewModel.getSearchFilter().isNotEmpty()) {
+                        adapter.refreshAfterSearch()
+                        adapter.addItems(state.items)
+                    } else {
+                        adapter.addItems(state.items)
+                        scrollListener.resume()
+                    }
                 }
 
             }
@@ -85,10 +118,10 @@ class SetsFragment() : Fragment() {
 
 
         viewModel.getData().observe(viewLifecycleOwner, Observer { items ->
-            if(items.isNotEmpty()){
+            if (items.isNotEmpty()) {
                 adapter.setItems(items)
                 viewModel.getSelectedItem().let { selectedItem ->
-                    if(viewModel.getSelectedItem() >= 0){
+                    if (viewModel.getSelectedItem() >= 0) {
                         recycler_cards.scrollToPosition(selectedItem)
                         viewModel.setSelectedItem(-1)
                     }
@@ -99,17 +132,17 @@ class SetsFragment() : Fragment() {
 
 
         viewModel.getSearchData().observe(viewLifecycleOwner, Observer { items ->
-            if(items.isNotEmpty()){
+            if (items.isNotEmpty()) {
                 adapter.setItems(items)
             }
         })
     }
 
 
-    private fun setupRecyclerView(){
+    private fun setupRecyclerView() {
         val listColumns = 3
         val layoutManager = GridLayoutManager(context, listColumns)
-        layoutManager.spanSizeLookup = object: GridLayoutManager.SpanSizeLookup(){
+        layoutManager.spanSizeLookup = object : GridLayoutManager.SpanSizeLookup() {
             override fun getSpanSize(position: Int): Int {
                 return if (adapter.isHeader(position)) layoutManager.spanCount else 1
             }
@@ -119,11 +152,13 @@ class SetsFragment() : Fragment() {
         adapter = SetsAdapter(clickListener)
         recycler_cards.adapter = adapter
 
-        scrollListener = object: EndlessScrollListener(recycler_cards){
+        scrollListener = object : EndlessScrollListener(recycler_cards) {
             override fun onFirstItem() {
             }
+
             override fun onScroll() {
             }
+
             override fun onLoadMore() {
                 viewModel.loadMore()
             }
@@ -136,7 +171,7 @@ class SetsFragment() : Fragment() {
     }
 
 
-    private val clickListener = object: SetsAdapter.OnItemClickListener{
+    private val clickListener = object : SetsAdapter.OnItemClickListener {
         override fun onItemClicked(card: Card, position: Int) {
             view?.let {
 
@@ -150,7 +185,7 @@ class SetsFragment() : Fragment() {
     }
 
 
-    private fun showNetworkError(errorMessage: Int){
+    private fun showNetworkError(errorMessage: Int) {
         view?.let {
             Snackbar.make(it, errorMessage, Snackbar.LENGTH_LONG)
                 .setAction(R.string.try_again) {
