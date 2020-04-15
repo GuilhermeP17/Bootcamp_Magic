@@ -1,6 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#6200EE</color>
-    <color name="colorPrimaryDark">#3700B3</color>
-    <color name="colorAccent">#03DAC5</color>
+    <color name="colorPrimary">#FFFFFF</color>
+    <color name="colorPrimaryDark">#373737</color>
+    <color name="colorAccent">#FFFFFF</color>
+    <color name="colorBackground">#E41C1C1C</color>
+    <color name="searchHintColor">#EEB1B1B1</color>
+    <color name="tabBackground">#F31C1C1C</color>
+    <color name="colorRipple">#52FFFFFF</color>
+
+    <color name="colorHeaderTypes">#EEB1B1B1</color>
 </resources>

@@ -1,11 +1,54 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
         <!-- Customize your theme here. -->
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
+    <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
+    <style name="Text.Light" parent="TextAppearance.AppCompat">
+        <item name="android:textSize">@dimen/default_font_size</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/colorAccent</item>
+    </style>
+
+    <style name="Text.Header.Sets" parent="TextAppearance.AppCompat">
+        <item name="android:textSize">@dimen/header_sets_font_size</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/colorAccent</item>
+    </style>
+
+    <style name="Text.Header.Types" parent="TextAppearance.AppCompat">
+        <item name="android:textSize">@dimen/header_types_font_size</item>
+        <item name="android:textColor">@color/colorHeaderTypes</item>
+    </style>
+
+    <style name="SearchBar" parent="@android:style/Widget.EditText">
+        <item name="android:background">@drawable/search_background</item>
+        <item name="android:textColor">@color/colorAccent</item>
+        <item name="android:textColorHint">@color/searchHintColor</item>
+        <item name="android:paddingTop">5dp</item>
+        <item name="android:paddingBottom">5dp</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:drawableLeft">@drawable/ic_search</item>
+        <item name="android:drawableStart">@drawable/ic_search</item>
+    </style>
+
+    <style name="Button" parent="TextAppearance.AppCompat">
+        <item name="android:background">@drawable/button_background</item>
+        <item name="android:textColor">@color/colorAccent</item>
+        <item name="android:textSize">@dimen/button_font_size</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:gravity">center</item>
+        <item name="android:paddingTop">@dimen/button_padding_vertical</item>
+        <item name="android:paddingBottom">@dimen/button_padding_vertical</item>
+        <item name="android:paddingLeft">@dimen/button_padding_horizontal</item>
+        <item name="android:paddingRight">@dimen/button_padding_horizontal</item>
     </style>
 
 </resources>
